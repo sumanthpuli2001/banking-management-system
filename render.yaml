@@ -11,11 +11,11 @@ services:
       - key: PORT
         value: 10000
       - key: SPRING_DATASOURCE_URL
-        sync: false
+        value: jdbc:mysql://gateway01.ap-northeast-1.prod.aws.tidbcloud.com:4000/enterprise_bank_db?sslMode=VERIFY_IDENTITY&enabledTLSProtocols=TLSv1.2,TLSv1.3
       - key: SPRING_DATASOURCE_USERNAME
-        sync: false
+        value: HVtbf3tQkyxXK4C.root
       - key: SPRING_DATASOURCE_PASSWORD
-        sync: false
+        value: LACrrRIQSQxK1tDU
 
   # 2. Frontend React / Vite Static Site
   - type: web
