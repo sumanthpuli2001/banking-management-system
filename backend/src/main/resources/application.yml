@@ -1,5 +1,5 @@
 server:
-  port: 8989
+  port: ${PORT:8989}
   servlet:
     context-path: /
 
@@ -7,9 +7,9 @@ spring:
   application:
     name: apex-banking-management-system
   datasource:
-    url: jdbc:mysql://localhost:3306/enterprise_bank_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
-    username: root
-    password: root
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/enterprise_bank_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
     hikari:
       maximum-pool-size: 15
