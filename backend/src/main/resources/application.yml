@@ -1,0 +1,59 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: apex-banking-management-system
+  datasource:
+    url: jdbc:mysql://localhost:3306/enterprise_bank_db?createDatabaseIfNotExist=true&useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=UTC
+    username: root
+    password: root
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    hikari:
+      maximum-pool-size: 15
+      minimum-idle: 5
+      idle-timeout: 300000
+      connection-timeout: 20000
+      pool-name: ApexBankHikariPool
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+    open-in-view: false
+
+  jackson:
+    serialization:
+      write-dates-as-timestamps: false
+
+# Banking Security & JWT Parameters
+banking:
+  jwt:
+    secret: 404E635266556A586E3272357538782F413F4428472B4B6250645367566B59704428472B4B6250645367566B59703272357538782F413F4428472B4B62506453
+    access-token-expiration-ms: 86400000 # 24 hours
+    refresh-token-expiration-ms: 604800000 # 7 days
+  security:
+    max-failed-attempts: 5
+    lockout-duration-minutes: 15
+  cors:
+    allowed-origins:
+      - "http://localhost:5173"
+      - "http://localhost:3000"
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui/index.html
+    operationsSorter: method
+
+logging:
+  level:
+    root: INFO
+    com.apexbank: DEBUG
+    org.springframework.security: INFO
