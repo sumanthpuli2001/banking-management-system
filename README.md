@@ -67,9 +67,9 @@ An enterprise-grade Banking Management System representing the internal core ope
 cd backend
 mvn spring-boot:run
 ```
-- Server starts on: `http://localhost:8080`
-- Swagger UI Documentation: `http://localhost:8080/swagger-ui/index.html`
-- OpenAPI Specification: `http://localhost:8080/v3/api-docs`
+- Server starts on: `http://localhost:8989`
+- Swagger UI Documentation: `http://localhost:8989/swagger-ui/index.html`
+- OpenAPI Specification: `http://localhost:8989/v3/api-docs`
 
 ### Frontend (React + Vite)
 ```bash
