@@ -17,12 +17,10 @@ services:
       - key: SPRING_DATASOURCE_PASSWORD
         value: LACrrRIQSQxK1tDU
 
-  # 2. Frontend React / Vite Static Site
+  # 2. Frontend React / Vite Static Site (Globally distributed on Render CDN)
   - type: web
     name: apex-banking-frontend
     env: static
-    plan: free
-    region: oregon
     buildCommand: cd frontend && npm install && npm run build
     staticPublishPath: frontend/dist
     routes:
