@@ -2,8 +2,9 @@ services:
   # 1. Backend Spring Boot Web Service
   - type: web
     name: apex-banking-backend
-    env: docker
-    dockerfilePath: backend/Dockerfile
+    runtime: docker
+    rootDir: backend
+    dockerfilePath: ./Dockerfile
     plan: free
     region: oregon
     healthCheckPath: /v3/api-docs
@@ -17,12 +18,13 @@ services:
       - key: SPRING_DATASOURCE_PASSWORD
         value: LACrrRIQSQxK1tDU
 
-  # 2. Frontend React / Vite Static Site (Globally distributed on Render CDN)
+  # 2. Frontend React / Vite Static Site
   - type: web
     name: apex-banking-frontend
-    env: static
-    buildCommand: cd frontend && npm install && npm run build
-    staticPublishPath: frontend/dist
+    runtime: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: ./dist
     routes:
       - type: rewrite
         source: /*
