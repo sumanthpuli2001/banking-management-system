@@ -378,19 +378,28 @@ export const HeadOfficeDashboardPage: React.FC = () => {
         </div>
 
         {/* Suspicious Alerts */}
-        <div className="bg-gradient-to-br from-rose-50/80 via-red-50/30 to-rose-50/40 border border-rose-200 rounded-2xl p-6 flex items-start space-x-4 shadow-sm">
+        <div 
+          onClick={() => navigate('/compliance')}
+          className="bg-gradient-to-br from-rose-50/80 via-red-50/30 to-rose-50/40 border border-rose-200 rounded-2xl p-6 flex items-start space-x-4 shadow-sm hover:border-rose-400 hover:shadow-md cursor-pointer transition group"
+        >
           <div className="p-3 bg-gradient-to-br from-rose-600 to-red-700 text-white rounded-xl shadow-md">
             <AlertTriangle className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-rose-950 font-mono">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-rose-950 font-mono group-hover:text-rose-800">
               Suspicious Transaction & Anti-Money Laundering (AML) Monitor
             </h4>
             <p className="text-xs text-rose-900/80 mt-1">
               <strong>{data.suspiciousTransactionAlerts} alerts</strong> flagged by rule engines (rapid deposits &gt; ₹10,00,000 without prior history).
             </p>
             <div className="mt-3.5">
-              <button className="text-xs font-bold text-rose-700 hover:text-rose-950 underline font-mono">
+              <button 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  navigate('/compliance');
+                }}
+                className="text-xs font-bold text-rose-700 hover:text-rose-950 underline font-mono cursor-pointer"
+              >
                 Open AML Review Console &rarr;
               </button>
             </div>

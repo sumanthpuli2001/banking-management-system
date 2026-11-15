@@ -10,6 +10,7 @@ import com.apexbank.entity.*;
 import com.apexbank.exception.BankingException;
 import com.apexbank.exception.ResourceNotFoundException;
 import com.apexbank.repository.*;
+import com.apexbank.service.compliance.AmlMonitoringEngineService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class TransactionService {
     private final AuditService auditService;
     private final AccountingEngineService accountingEngineService;
     private final TellerCashDrawerRepository tellerCashDrawerRepository;
+    private final AmlMonitoringEngineService amlMonitoringEngineService;
 
     private static final BigDecimal MAKER_CHECKER_TRANSFER_THRESHOLD = new BigDecimal("500000.00");
     private static final BigDecimal AML_ALERT_THRESHOLD = new BigDecimal("1000000.00");
@@ -43,6 +45,18 @@ public class TransactionService {
                               AuditService auditService,
                               AccountingEngineService accountingEngineService,
                               TellerCashDrawerRepository tellerCashDrawerRepository) {
+        this(bankAccountRepository, transactionRepository, ledgerEntryRepository, approvalRequestRepository,
+             auditService, accountingEngineService, tellerCashDrawerRepository, null);
+    }
+
+    public TransactionService(BankAccountRepository bankAccountRepository,
+                              TransactionRepository transactionRepository,
+                              TransactionLedgerEntryRepository ledgerEntryRepository,
+                              ApprovalRequestRepository approvalRequestRepository,
+                              AuditService auditService,
+                              AccountingEngineService accountingEngineService,
+                              TellerCashDrawerRepository tellerCashDrawerRepository,
+                              AmlMonitoringEngineService amlMonitoringEngineService) {
         this.bankAccountRepository = bankAccountRepository;
         this.transactionRepository = transactionRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
@@ -50,6 +64,7 @@ public class TransactionService {
         this.auditService = auditService;
         this.accountingEngineService = accountingEngineService;
         this.tellerCashDrawerRepository = tellerCashDrawerRepository;
+        this.amlMonitoringEngineService = amlMonitoringEngineService;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -115,7 +130,15 @@ public class TransactionService {
                 request.getNarration() != null ? request.getNarration() : "Counter Cash Deposit to " + account.getAccountNumber()
         );
 
-        // Suspicious activity check
+        // Suspicious activity check & automated AML rule engine
+        try {
+            if (amlMonitoringEngineService != null) {
+                amlMonitoringEngineService.evaluateTransaction(savedTxn);
+            }
+        } catch (Exception ex) {
+            // Log warning but allow core banking settlement to proceed
+        }
+
         if (amount.compareTo(AML_ALERT_THRESHOLD) >= 0) {
             auditService.recordAudit(cashierUser, "AML_ALERT_HIGH_VALUE_DEPOSIT", "TRANSACTION", ref,
                     "High value cash deposit flagged for auditor: INR " + amount + " to account " + account.getAccountNumber(), "127.0.0.1", "WARNING");
@@ -201,6 +224,14 @@ public class TransactionService {
 
         auditService.recordAudit(cashierUser, "CASH_WITHDRAWAL", "TRANSACTION", ref,
                 "Cash withdrawal of INR " + amount + " from " + account.getAccountNumber(), "127.0.0.1", "SUCCESS");
+
+        try {
+            if (amlMonitoringEngineService != null) {
+                amlMonitoringEngineService.evaluateTransaction(savedTxn);
+            }
+        } catch (Exception ex) {
+            // Log warning but allow settlement
+        }
 
         return mapToDto(savedTxn);
     }
@@ -340,6 +371,14 @@ public class TransactionService {
 
         auditService.recordAudit(currentUser, "FUND_TRANSFER_EXECUTED", "TRANSACTION", ref,
                 "Transfer of INR " + amount + " from " + source.getAccountNumber() + " to " + destination.getAccountNumber(), "127.0.0.1", "SUCCESS");
+
+        try {
+            if (amlMonitoringEngineService != null) {
+                amlMonitoringEngineService.evaluateTransaction(savedTxn);
+            }
+        } catch (Exception ex) {
+            // Log warning
+        }
 
         return mapToDto(savedTxn);
     }

@@ -42,5 +42,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Long> 
     @Query("SELECT COALESCE(SUM(t.amount), 0) FROM Transaction t WHERE t.transactionType = 'CASH_WITHDRAWAL' AND t.status = 'SUCCESS' AND t.transactionTimestamp >= :since")
     BigDecimal sumTodayWithdrawals(@Param("since") LocalDateTime since);
 
+    @Query("SELECT t FROM Transaction t WHERE (t.sourceAccount.id = :accountId OR t.destinationAccount.id = :accountId) AND t.transactionTimestamp >= :since ORDER BY t.transactionTimestamp DESC")
+    List<Transaction> findRecentTransactionsByAccount(@Param("accountId") Long accountId, @Param("since") LocalDateTime since);
+
+    @Query("SELECT t FROM Transaction t WHERE (t.sourceAccount.id = :accountId OR t.destinationAccount.id = :accountId) AND (t.transactionType = 'CASH_DEPOSIT' OR t.transactionType = 'CASH_WITHDRAWAL') AND t.transactionTimestamp >= :since ORDER BY t.transactionTimestamp DESC")
+    List<Transaction> findRecentCashTransactionsByAccount(@Param("accountId") Long accountId, @Param("since") LocalDateTime since);
+
+    @Query("SELECT COUNT(t) FROM Transaction t WHERE (t.sourceAccount.id = :accountId OR t.destinationAccount.id = :accountId) AND t.transactionTimestamp < :before")
+    long countHistoricalTransactionsBefore(@Param("accountId") Long accountId, @Param("before") LocalDateTime before);
+
     List<Transaction> findTop20ByOrderByTransactionTimestampDesc();
 }

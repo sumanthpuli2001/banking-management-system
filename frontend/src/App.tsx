@@ -19,6 +19,7 @@ import { AuditCompliancePage } from './pages/AuditCompliancePage';
 import { AccountingGeneralLedgerPage } from './pages/AccountingGeneralLedgerPage';
 import { TransactionReconciliationPage } from './pages/TransactionReconciliationPage';
 import { RegulatoryLiquidityPage } from './pages/RegulatoryLiquidityPage';
+import { ComplianceAmlPage } from './pages/ComplianceAmlPage';
 import { CustomerPortalPage } from './pages/CustomerPortalPage';
 import { PlaceholderModulePage } from './pages/PlaceholderModulePage';
 
@@ -85,6 +86,8 @@ export const App: React.FC = () => {
               <Route path="/accounting" element={<AccountingGeneralLedgerPage />} />
               <Route path="/reconciliation" element={<TransactionReconciliationPage />} />
               <Route path="/approvals" element={<ApprovalCenterPage />} />
+              <Route path="/compliance" element={<ComplianceAmlPage />} />
+              <Route path="/aml" element={<ComplianceAmlPage />} />
               <Route path="/audit" element={<AuditCompliancePage />} />
               <Route
                 path="/settings"

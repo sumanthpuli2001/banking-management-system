@@ -165,6 +165,13 @@ export const Sidebar: React.FC = () => {
           allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER'],
         },
         {
+          name: 'AML & KYC Compliance',
+          path: '/compliance',
+          icon: ShieldAlert,
+          badge: 'AML',
+          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER'],
+        },
+        {
           name: 'Audit & Compliance',
           path: '/audit',
           icon: ShieldAlert,
