@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { ApiResponse } from '../types/auth';
+import { Pagination } from '../components/common/Pagination';
 import {
   ShieldAlert,
   Search,
@@ -46,6 +47,8 @@ export const AuditCompliancePage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [actionFilter, setActionFilter] = useState<string>('ALL');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
 
   useEffect(() => {
     fetchAuditData();
@@ -101,6 +104,16 @@ export const AuditCompliancePage: React.FC = () => {
     lh.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
     lh.ipAddress?.toLowerCase().includes(searchTerm.toLowerCase()) ||
     lh.status.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  const paginatedLogs = filteredLogs.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  const paginatedLogins = filteredLogins.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
   );
 
   const failedLoginsCount = logins.filter((l) => l.status !== 'SUCCESS').length;
@@ -266,7 +279,7 @@ export const AuditCompliancePage: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredLogs.map((log) => (
+                  paginatedLogs.map((log) => (
                     <tr key={log.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="px-5 py-3.5 text-slate-400 whitespace-nowrap">
                         {new Date(log.eventTimestamp).toLocaleString('en-IN')}
@@ -304,6 +317,14 @@ export const AuditCompliancePage: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredLogs.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       )}
 
@@ -336,7 +357,7 @@ export const AuditCompliancePage: React.FC = () => {
                     </td>
                   </tr>
                 ) : (
-                  filteredLogins.map((lh) => (
+                  paginatedLogins.map((lh) => (
                     <tr key={lh.id} className="hover:bg-slate-800/40 transition-colors">
                       <td className="px-5 py-3.5 text-slate-400 whitespace-nowrap">
                         {new Date(lh.loginTime).toLocaleString('en-IN')}
@@ -366,6 +387,14 @@ export const AuditCompliancePage: React.FC = () => {
               </tbody>
             </table>
           </div>
+
+          <Pagination
+            currentPage={currentPage}
+            totalItems={filteredLogins.length}
+            pageSize={pageSize}
+            onPageChange={setCurrentPage}
+            onPageSizeChange={setPageSize}
+          />
         </div>
       )}
 

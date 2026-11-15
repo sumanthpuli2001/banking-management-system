@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { ApiResponse } from '../types/auth';
+import { Pagination } from '../components/common/Pagination';
 import {
   UserCheck,
   Plus,
@@ -45,6 +46,8 @@ export const CustomerManagementPage: React.FC = () => {
   const [customers, setCustomers] = useState<CustomerItem[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedCustomer, setSelectedCustomer] = useState<CustomerItem | null>(null);
 
@@ -136,6 +139,21 @@ export const CustomerManagementPage: React.FC = () => {
     }).format(amt);
   };
 
+  const filtered = customers.filter((c) => {
+    const sTerm = searchTerm.toLowerCase();
+    return (
+      (c.fullName || '').toLowerCase().includes(sTerm) ||
+      (c.customerNumber || '').toLowerCase().includes(sTerm) ||
+      (c.email || '').toLowerCase().includes(sTerm) ||
+      (c.phone || '').includes(sTerm)
+    );
+  });
+
+  const paginatedCustomers = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   return (
     <div className="p-8 space-y-6 max-w-7xl mx-auto">
       {/* Top Banner */}
@@ -202,7 +220,7 @@ export const CustomerManagementPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slatebank-100 font-medium">
-              {customers.map((c) => (
+              {paginatedCustomers.map((c) => (
                 <tr key={c.id} className="hover:bg-bank-50/30 transition">
                   <td className="py-3.5 px-6">
                     <div className="flex items-center space-x-3">
@@ -277,6 +295,14 @@ export const CustomerManagementPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filtered.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+        />
       </div>
 
       {/* Customer Dossier Modal */}

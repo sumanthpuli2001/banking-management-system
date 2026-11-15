@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api/axios';
 import { ApiResponse } from '../types/auth';
+import { Pagination } from '../components/common/Pagination';
 import {
   CreditCard,
   Plus,
@@ -54,6 +55,8 @@ export const BankAccountManagementPage: React.FC = () => {
   const [loading, setLoading] = useState<boolean>(true);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedStatus, setSelectedStatus] = useState<string>('ALL');
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
   const [isCreateModalOpen, setIsCreateModalOpen] = useState<boolean>(false);
 
   // Status Action Modal
@@ -153,6 +156,11 @@ export const BankAccountManagementPage: React.FC = () => {
     return matchesSearch && matchesStatus;
   });
 
+  const paginatedAccounts = filtered.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
   const formatCurrency = (amt: number) => {
     return new Intl.NumberFormat('en-IN', {
       style: 'currency',
@@ -244,7 +252,7 @@ export const BankAccountManagementPage: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slatebank-100 font-medium">
-              {filtered.map((a) => (
+              {paginatedAccounts.map((a) => (
                 <tr key={a.id} className="hover:bg-bank-50/30 transition">
                   <td className="py-3.5 px-6">
                     <div className="flex items-center space-x-3">
@@ -316,6 +324,14 @@ export const BankAccountManagementPage: React.FC = () => {
             </tbody>
           </table>
         </div>
+
+        <Pagination
+          currentPage={currentPage}
+          totalItems={filtered.length}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+          onPageSizeChange={setPageSize}
+        />
       </div>
 
       {/* Account Statement Drawer / Modal */}
