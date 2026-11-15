@@ -882,7 +882,11 @@ public class DataInitializer implements CommandLineRunner {
             {"INTERNAL_TRANSFER", "2010-DEMAND-DEPOSITS-SAVINGS", "2010-DEMAND-DEPOSITS-SAVINGS", "Intrabank transfer between customer deposit accounts"},
             {"LOAN_DISBURSEMENT", "1020-LOANS-ADVANCES", "2010-DEMAND-DEPOSITS-SAVINGS", "Sanctioned loan advance credited to customer savings deposit account"},
             {"FD_CREATION", "2010-DEMAND-DEPOSITS-SAVINGS", "2030-TERM-DEPOSITS-FD", "Customer savings deposit transferred to Term Fixed Deposit commitment"},
-            {"LOAN_REPAYMENT", "2010-DEMAND-DEPOSITS-SAVINGS", "1020-LOANS-ADVANCES", "Customer monthly repayment reducing outstanding credit advance"}
+            {"LOAN_REPAYMENT", "2010-DEMAND-DEPOSITS-SAVINGS", "1020-LOANS-ADVANCES", "Customer monthly repayment reducing outstanding credit advance"},
+            {"NEFT_TRANSFER_OUTWARD", "2010-DEMAND-DEPOSITS-SAVINGS", "1040-RBI-RESERVE-BALANCE", "Outward NEFT electronic settlement via RBI clearing account"},
+            {"RTGS_TRANSFER_OUTWARD", "2010-DEMAND-DEPOSITS-SAVINGS", "1040-RBI-RESERVE-BALANCE", "Outward RTGS high-value settlement via RBI central gross accounts"},
+            {"IMPS_TRANSFER_OUTWARD", "2010-DEMAND-DEPOSITS-SAVINGS", "1040-RBI-RESERVE-BALANCE", "Outward IMPS 24x7 settlement via NPCI switch account"},
+            {"PAYMENT_FEE", "2010-DEMAND-DEPOSITS-SAVINGS", "4020-FEE-COMMISSION-INCOME", "Electronic payment rail transaction processing fee"}
         };
 
         for (String[] r : ruleDefs) {

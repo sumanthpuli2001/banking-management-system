@@ -141,6 +141,103 @@ public class AccountingEngineService {
     }
 
     /**
+     * Interbank Payment Rail Double-Entry Posting:
+     * DR Customer Deposit Liability (Total Amount + Fee)
+     * CR Clearing/Reserve Account (Transfer Amount)
+     * CR Fee & Commission Income (Fee, if > 0)
+     * Invariant: Total Debits == Total Credits.
+     */
+    @Transactional(isolation = Isolation.READ_COMMITTED)
+    public JournalEntryDto postPaymentRailEntry(String transactionReference,
+                                                String railType,
+                                                BigDecimal amount,
+                                                BigDecimal fee,
+                                                Branch branch,
+                                                User user,
+                                                String narration) {
+        if (amount == null || amount.compareTo(BigDecimal.ZERO) <= 0) {
+            throw new BankingException("Accounting error: Payment transfer amount must be positive.");
+        }
+        BigDecimal normalizedFee = fee != null && fee.compareTo(BigDecimal.ZERO) > 0 
+                ? fee.setScale(4, RoundingMode.HALF_UP) 
+                : BigDecimal.ZERO.setScale(4, RoundingMode.HALF_UP);
+        BigDecimal normalizedAmount = amount.setScale(4, RoundingMode.HALF_UP);
+        BigDecimal totalDebited = normalizedAmount.add(normalizedFee);
+
+        validateOrOpenAccountingPeriod(LocalDate.now(), user);
+        String entryNumber = generateEntryNumber();
+
+        JournalEntry entry = JournalEntry.builder()
+                .entryNumber(entryNumber)
+                .postingDate(LocalDate.now())
+                .transactionReference(transactionReference)
+                .transactionType("PAYMENT_RAIL_" + railType)
+                .branch(branch)
+                .status("POSTED")
+                .narration(narration)
+                .postedByUser(user)
+                .postedAt(LocalDateTime.now())
+                .build();
+
+        GLAccount customerDeposit = glAccountRepository.findByAccountCodeForUpdate("2010-DEMAND-DEPOSITS-SAVINGS")
+                .orElseThrow(() -> new ResourceNotFoundException("GLAccount", "code", "2010-DEMAND-DEPOSITS-SAVINGS"));
+
+        GLAccount settlementAccount = glAccountRepository.findByAccountCodeForUpdate("1040-RBI-RESERVE-BALANCE")
+                .orElseThrow(() -> new ResourceNotFoundException("GLAccount", "code", "1040-RBI-RESERVE-BALANCE"));
+
+        // DR Customer Deposit for Total (amount + fee)
+        entry.addLine(JournalEntryLine.builder()
+                .journalEntry(entry)
+                .glAccount(customerDeposit)
+                .entryType("DEBIT")
+                .amount(totalDebited)
+                .memo("Debit customer deposit liability: " + transactionReference)
+                .lineNumber(1)
+                .build());
+        applyGLAccountBalance(customerDeposit, "DEBIT", totalDebited);
+        glAccountRepository.save(customerDeposit);
+
+        // CR Settlement Account for Transfer Amount
+        entry.addLine(JournalEntryLine.builder()
+                .journalEntry(entry)
+                .glAccount(settlementAccount)
+                .entryType("CREDIT")
+                .amount(normalizedAmount)
+                .memo("Credit interbank clearing/reserve account: " + railType + " " + transactionReference)
+                .lineNumber(2)
+                .build());
+        applyGLAccountBalance(settlementAccount, "CREDIT", normalizedAmount);
+        glAccountRepository.save(settlementAccount);
+
+        // If fee > 0, CR Fee Income
+        if (normalizedFee.compareTo(BigDecimal.ZERO) > 0) {
+            GLAccount feeAccount = glAccountRepository.findByAccountCodeForUpdate("4020-FEE-COMMISSION-INCOME")
+                    .orElseThrow(() -> new ResourceNotFoundException("GLAccount", "code", "4020-FEE-COMMISSION-INCOME"));
+
+            entry.addLine(JournalEntryLine.builder()
+                    .journalEntry(entry)
+                    .glAccount(feeAccount)
+                    .entryType("CREDIT")
+                    .amount(normalizedFee)
+                    .memo("Credit payment rail transaction processing fee")
+                    .lineNumber(3)
+                    .build());
+            applyGLAccountBalance(feeAccount, "CREDIT", normalizedFee);
+            glAccountRepository.save(feeAccount);
+        }
+
+        validateBalancedEntry(entry);
+        JournalEntry saved = journalEntryRepository.save(entry);
+
+        auditService.recordAudit(user, "JOURNAL_ENTRY_POSTED", "GENERAL_LEDGER", entryNumber,
+                String.format("Payment rail double-entry posted: DR 2010 (₹%s) / CR 1040 (₹%s) CR 4020 (₹%s) for %s",
+                        totalDebited, normalizedAmount, normalizedFee, transactionReference),
+                "127.0.0.1", "SUCCESS");
+
+        return mapToDto(saved);
+    }
+
+    /**
      * Immutable Accounting Reversal:
      * Never deletes/updates original posted entries. Generates an exact inverse mirror entry.
      */
