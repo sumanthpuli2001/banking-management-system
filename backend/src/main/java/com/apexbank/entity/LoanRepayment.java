@@ -50,4 +50,7 @@ public class LoanRepayment {
     @Column(name = "penalty_amount", precision = 18, scale = 2)
     @Builder.Default
     private BigDecimal penaltyAmount = BigDecimal.ZERO;
+
+    @Column(name = "payment_reference", length = 64)
+    private String paymentReference;
 }

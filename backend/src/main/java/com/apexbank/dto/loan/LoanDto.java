@@ -25,6 +25,13 @@ public class LoanDto {
     private BigDecimal totalInterest;
     private BigDecimal totalPayable;
     private BigDecimal outstandingPrincipal;
+    private BigDecimal totalRepaidPrincipal;
+    private BigDecimal totalRepaidInterest;
+    private String assetClassification;
+    private Integer daysPastDue;
+    private BigDecimal provisioningPercentage;
+    private BigDecimal requiredProvisionAmount;
+    private BigDecimal accruedPenalInterest;
     private String status;
     private LocalDateTime sanctionedDate;
     private LocalDateTime maturityDate;

@@ -34,4 +34,6 @@ public class LoanApplicationRequest {
 
     private String purpose;
     private BigDecimal monthlyIncome;
+    private BigDecimal existingMonthlyObligations;
+    private Long loanProductId;
 }

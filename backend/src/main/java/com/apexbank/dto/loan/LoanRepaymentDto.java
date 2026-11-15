@@ -21,4 +21,5 @@ public class LoanRepaymentDto {
     private LocalDateTime paidDate;
     private String status;
     private BigDecimal penaltyAmount;
+    private String paymentReference;
 }

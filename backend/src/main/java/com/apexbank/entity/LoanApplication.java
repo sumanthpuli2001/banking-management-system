@@ -47,9 +47,31 @@ public class LoanApplication extends BaseAuditableEntity {
     @Column(name = "monthly_income", precision = 18, scale = 2)
     private BigDecimal monthlyIncome;
 
+    @Column(name = "existing_monthly_obligations", precision = 18, scale = 2)
+    @Builder.Default
+    private BigDecimal existingMonthlyObligations = BigDecimal.ZERO;
+
+    @Column(name = "foir_percentage", precision = 5, scale = 2)
+    private BigDecimal foirPercentage; // Fixed Obligation to Income Ratio
+
     @Column(name = "credit_score")
     @Builder.Default
     private Integer creditScore = 750;
+
+    @Column(name = "credit_risk_grade", length = 30)
+    @Builder.Default
+    private String creditRiskGrade = "PRIME"; // PRIME, NEAR_PRIME, SUBPRIME, HIGH_RISK
+
+    @Column(name = "bureau_status", length = 40)
+    @Builder.Default
+    private String bureauStatus = "SIMULATED_VERIFIED";
+
+    @Column(name = "approval_hierarchy_level", length = 60)
+    @Builder.Default
+    private String approvalHierarchyLevel = "BRANCH_MANAGER"; // BRANCH_OFFICER, BRANCH_MANAGER, REGIONAL_HEAD, CREDIT_COMMITTEE
+
+    @Column(name = "sanction_letter_reference", length = 60)
+    private String sanctionLetterReference;
 
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default

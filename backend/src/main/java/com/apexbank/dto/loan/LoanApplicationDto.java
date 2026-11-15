@@ -23,7 +23,13 @@ public class LoanApplicationDto {
     private Integer requestedTenureMonths;
     private String purpose;
     private BigDecimal monthlyIncome;
+    private BigDecimal existingMonthlyObligations;
+    private BigDecimal foirPercentage;
     private Integer creditScore;
+    private String creditRiskGrade;
+    private String bureauStatus;
+    private String approvalHierarchyLevel;
+    private String sanctionLetterReference;
     private String status;
     private String remarks;
     private LocalDateTime applicationDate;
