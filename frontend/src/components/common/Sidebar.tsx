@@ -7,17 +7,16 @@ import {
   Users,
   UserCheck,
   CreditCard,
-  ArrowDownCircle,
-  ArrowUpCircle,
   ArrowLeftRight,
   Landmark,
   PiggyBank,
   CheckSquare,
   ShieldAlert,
-  Sliders,
   ChevronRight,
   ChevronDown,
-  Layers
+  Layers,
+  Sparkles,
+  ShieldCheck
 } from 'lucide-react';
 
 interface NavItem {
@@ -98,7 +97,7 @@ export const Sidebar: React.FC = () => {
           name: 'Bank Accounts',
           path: '/accounts',
           icon: CreditCard,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CUSTOMER'],
+          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CASHIER'],
         },
       ],
     },
@@ -106,22 +105,16 @@ export const Sidebar: React.FC = () => {
       title: 'COUNTER TRANSACTIONS',
       items: [
         {
-          name: 'Cash Deposit',
-          path: '/deposits',
-          icon: ArrowDownCircle,
-          allowedRoles: ['SUPER_ADMIN', 'BRANCH_MANAGER', 'CASHIER'],
-        },
-        {
-          name: 'Cash Withdrawal',
-          path: '/withdrawals',
-          icon: ArrowUpCircle,
+          name: 'Cashier Till & Vault',
+          path: '/cashier',
+          icon: Landmark,
           allowedRoles: ['SUPER_ADMIN', 'BRANCH_MANAGER', 'CASHIER'],
         },
         {
           name: 'Fund Transfers',
           path: '/transfers',
           icon: ArrowLeftRight,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CUSTOMER'],
+          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CASHIER', 'CUSTOMER'],
         },
       ],
     },
@@ -132,11 +125,11 @@ export const Sidebar: React.FC = () => {
           name: 'Loan Desk',
           path: '/loans',
           icon: Landmark,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'LOAN_OFFICER', 'CUSTOMER'],
+          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'LOAN_OFFICER'],
         },
         {
           name: 'Term & Recurring Deposits',
-          path: '/deposits/term',
+          path: '/deposits',
           icon: PiggyBank,
           allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CUSTOMER'],
         },
@@ -158,69 +151,77 @@ export const Sidebar: React.FC = () => {
           icon: ShieldAlert,
           allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'AUDITOR'],
         },
-        {
-          name: 'System Parameters',
-          path: '/settings',
-          icon: Sliders,
-          allowedRoles: ['SUPER_ADMIN'],
-        },
       ],
     },
   ];
 
   return (
-    <aside className="w-64 bg-slatebank-900 border-r border-bank-800 flex flex-col h-[calc(100vh-4rem)] sticky top-16 select-none shrink-0 overflow-y-auto">
-      <div className="p-4 space-y-6 flex-1">
+    <aside className="w-64 bg-white border-r border-slate-200/80 text-slate-700 flex flex-col shrink-0 select-none shadow-[2px_0_8px_-3px_rgba(0,0,0,0.04)]">
+      {/* Navigation Groups */}
+      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5 custom-scrollbar">
         {sections.map((section) => {
-          // Filter items by role
-          const visibleItems = section.items.filter((item) => {
-            if (!item.allowedRoles) return true;
-            return item.allowedRoles.some((role) => hasRole(role as any));
-          });
+          const visibleItems = section.items.filter(
+            (item) => !item.allowedRoles || item.allowedRoles.some((role: any) => hasRole(role))
+          );
 
           if (visibleItems.length === 0) return null;
-
-          const isCollapsed = !!collapsedSections[section.title];
+          const isCollapsed = collapsedSections[section.title];
 
           return (
             <div key={section.title} className="space-y-1">
               <button
+                type="button"
                 onClick={() => toggleSection(section.title)}
-                className="w-full flex items-center justify-between px-3 py-1 text-[10px] font-bold tracking-wider text-slatebank-400 uppercase hover:text-slatebank-200"
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider text-slate-400 hover:text-amber-700 transition uppercase"
               >
                 <span>{section.title}</span>
                 {isCollapsed ? (
-                  <ChevronRight className="w-3 h-3 text-slatebank-500" />
+                  <ChevronRight className="w-3 h-3 text-slate-400" />
                 ) : (
-                  <ChevronDown className="w-3 h-3 text-slatebank-500" />
+                  <ChevronDown className="w-3 h-3 text-slate-400" />
                 )}
               </button>
 
               {!isCollapsed && (
                 <div className="space-y-0.5 mt-1">
-                  {visibleItems.map((item) => (
-                    <NavLink
-                      key={item.path}
-                      to={item.path}
-                      className={({ isActive }) =>
-                        `flex items-center justify-between px-3 py-2 rounded-lg text-xs font-medium transition duration-150 ${
-                          isActive
-                            ? 'bg-bank-700/80 text-white font-semibold border-l-4 border-bank-400 pl-2 shadow-sm'
-                            : 'text-slatebank-300 hover:text-white hover:bg-bank-900/60'
-                        }`
-                      }
-                    >
-                      <div className="flex items-center space-x-2.5 truncate">
-                        <item.icon className="w-4 h-4 shrink-0 text-bank-300" />
-                        <span className="truncate">{item.name}</span>
-                      </div>
-                      {item.badge && (
-                        <span className="bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] px-1.5 py-0.2 rounded font-mono font-bold">
-                          {item.badge}
-                        </span>
-                      )}
-                    </NavLink>
-                  ))}
+                  {visibleItems.map((item) => {
+                    const Icon = item.icon;
+                    return (
+                      <NavLink
+                        key={item.path}
+                        to={item.path}
+                        end={item.path === '/dashboard'}
+                        className={({ isActive }) =>
+                          `group flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ${
+                            isActive
+                              ? 'bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent text-amber-950 font-bold border-l-4 border-amber-600 shadow-sm'
+                              : 'text-slate-600 hover:text-amber-950 hover:bg-amber-50/60'
+                          }`
+                        }
+                      >
+                        {({ isActive }) => (
+                          <>
+                            <div className="flex items-center space-x-2.5 truncate">
+                              <Icon
+                                className={`w-4 h-4 shrink-0 transition-colors ${
+                                  isActive
+                                    ? 'text-amber-600'
+                                    : 'text-slate-400 group-hover:text-amber-700'
+                                }`}
+                              />
+                              <span className="truncate">{item.name}</span>
+                            </div>
+
+                            {item.badge && (
+                              <span className="ml-2 px-1.5 py-0.5 text-[9px] font-mono font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                                {item.badge}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </NavLink>
+                    );
+                  })}
                 </div>
               )}
             </div>
@@ -228,15 +229,20 @@ export const Sidebar: React.FC = () => {
         })}
       </div>
 
-      {/* Footer Info */}
-      <div className="p-4 border-t border-bank-800/80 bg-bank-950/40 text-[11px] text-slatebank-400">
-        <div className="flex items-center justify-between">
-          <span className="font-semibold text-slatebank-300">Apex Core Engine</span>
-          <span className="font-mono text-emerald-400 text-[10px]">OPERATIONAL</span>
+      {/* Bottom Institutional Solvency Card */}
+      <div className="p-3 border-t border-slate-100 bg-slate-50/70">
+        <div className="bg-gradient-to-br from-amber-50 to-orange-50/40 rounded-xl p-3 border border-amber-200/70 shadow-sm">
+          <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 mb-1">
+            <span className="flex items-center space-x-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+              <span>Capital Solvency</span>
+            </span>
+            <span className="text-[10px] font-mono font-extrabold text-emerald-700">100% OK</span>
+          </div>
+          <p className="text-[10px] text-slate-500 leading-tight">
+            Reserve Adequacy: 24.8% CRR/SLR. Full regulatory compliance active.
+          </p>
         </div>
-        <p className="text-[10px] text-slatebank-500 mt-1">
-          Server Node: <span className="font-mono text-slatebank-400">IN-MUM-PRD-01</span>
-        </p>
       </div>
     </aside>
   );

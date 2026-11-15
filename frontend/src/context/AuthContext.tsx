@@ -22,7 +22,12 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [token, setToken] = useState<string | null>(() => {
     return localStorage.getItem('apex_access_token');
   });
-  const [loading, setLoading] = useState<boolean>(true);
+  // Instant load: If user is already cached in localStorage, start with loading = false!
+  const [loading, setLoading] = useState<boolean>(() => {
+    const saved = localStorage.getItem('apex_user');
+    const tok = localStorage.getItem('apex_access_token');
+    return !(saved && tok);
+  });
 
   useEffect(() => {
     const verifySession = async () => {
