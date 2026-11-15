@@ -22,17 +22,20 @@ public class ApprovalService {
     private final BankAccountRepository bankAccountRepository;
     private final TransactionLedgerEntryRepository ledgerEntryRepository;
     private final AuditService auditService;
+    private final AccountingEngineService accountingEngineService;
 
     public ApprovalService(ApprovalRequestRepository approvalRequestRepository,
                            TransactionRepository transactionRepository,
                            BankAccountRepository bankAccountRepository,
                            TransactionLedgerEntryRepository ledgerEntryRepository,
-                           AuditService auditService) {
+                           AuditService auditService,
+                           AccountingEngineService accountingEngineService) {
         this.approvalRequestRepository = approvalRequestRepository;
         this.transactionRepository = transactionRepository;
         this.bankAccountRepository = bankAccountRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.auditService = auditService;
+        this.accountingEngineService = accountingEngineService;
     }
 
     @Transactional(readOnly = true)
@@ -109,6 +112,12 @@ public class ApprovalService {
                         .entryTimestamp(LocalDateTime.now())
                         .build();
                 ledgerEntryRepository.save(creditEntry);
+
+                // Core Double-Entry General Ledger Posting
+                accountingEngineService.postTransactionAccountingEntry(
+                        txn.getReferenceNumber(), "INTERNAL_TRANSFER", amount, source.getBranch(), checkerUser,
+                        "Approved High-Value Transfer to " + destination.getAccountNumber()
+                );
 
             } else {
                 txn.setStatus(TransactionStatus.FAILED);

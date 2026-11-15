@@ -15,7 +15,8 @@ import {
   ChevronRight,
   ChevronDown,
   Layers,
-  ShieldCheck
+  ShieldCheck,
+  BookOpen
 } from 'lucide-react';
 
 interface NavItem {
@@ -137,6 +138,12 @@ export const Sidebar: React.FC = () => {
     {
       title: 'GOVERNANCE & AUDIT',
       items: [
+        {
+          name: 'General Ledger & COA',
+          path: '/accounting',
+          icon: BookOpen,
+          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER'],
+        },
         {
           name: 'Maker-Checker Queue',
           path: '/approvals',

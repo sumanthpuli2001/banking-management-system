@@ -122,10 +122,15 @@ export const ApprovalCenterPage: React.FC = () => {
     }
   };
 
-  const formatDate = (dateString?: string) => {
-    if (!dateString) return 'Recent';
+  const formatDate = (dateVal?: any) => {
+    if (!dateVal) return 'Recent';
     try {
-      const d = new Date(dateString);
+      if (Array.isArray(dateVal)) {
+        const [year, month, day, hour = 0, minute = 0] = dateVal;
+        const d = new Date(year, month - 1, day, hour, minute);
+        return isNaN(d.getTime()) ? 'Recent' : d.toLocaleString('en-IN');
+      }
+      const d = new Date(dateVal);
       return isNaN(d.getTime()) ? 'Recent' : d.toLocaleString('en-IN');
     } catch {
       return 'Recent';

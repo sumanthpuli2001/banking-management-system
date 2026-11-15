@@ -27,6 +27,7 @@ public class TransactionService {
     private final TransactionLedgerEntryRepository ledgerEntryRepository;
     private final ApprovalRequestRepository approvalRequestRepository;
     private final AuditService auditService;
+    private final AccountingEngineService accountingEngineService;
 
     private static final BigDecimal MAKER_CHECKER_TRANSFER_THRESHOLD = new BigDecimal("500000.00");
     private static final BigDecimal AML_ALERT_THRESHOLD = new BigDecimal("1000000.00");
@@ -35,12 +36,14 @@ public class TransactionService {
                               TransactionRepository transactionRepository,
                               TransactionLedgerEntryRepository ledgerEntryRepository,
                               ApprovalRequestRepository approvalRequestRepository,
-                              AuditService auditService) {
+                              AuditService auditService,
+                              AccountingEngineService accountingEngineService) {
         this.bankAccountRepository = bankAccountRepository;
         this.transactionRepository = transactionRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.approvalRequestRepository = approvalRequestRepository;
         this.auditService = auditService;
+        this.accountingEngineService = accountingEngineService;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -90,6 +93,12 @@ public class TransactionService {
                 .entryTimestamp(LocalDateTime.now())
                 .build();
         ledgerEntryRepository.save(credit);
+
+        // Core Double-Entry General Ledger Posting: DR 1010-CASH-VAULT / CR 2010-DEMAND-DEPOSITS-SAVINGS
+        accountingEngineService.postTransactionAccountingEntry(
+                ref, "CASH_DEPOSIT", amount, branch, cashierUser,
+                request.getNarration() != null ? request.getNarration() : "Counter Cash Deposit to " + account.getAccountNumber()
+        );
 
         // Suspicious activity check
         if (amount.compareTo(AML_ALERT_THRESHOLD) >= 0) {
@@ -159,6 +168,12 @@ public class TransactionService {
                 .entryTimestamp(LocalDateTime.now())
                 .build();
         ledgerEntryRepository.save(debit);
+
+        // Core Double-Entry General Ledger Posting: DR 2010-DEMAND-DEPOSITS-SAVINGS / CR 1010-CASH-VAULT
+        accountingEngineService.postTransactionAccountingEntry(
+                ref, "CASH_WITHDRAWAL", amount, branch, cashierUser,
+                request.getNarration() != null ? request.getNarration() : "Counter Cash Withdrawal from " + account.getAccountNumber()
+        );
 
         auditService.recordAudit(cashierUser, "CASH_WITHDRAWAL", "TRANSACTION", ref,
                 "Cash withdrawal of INR " + amount + " from " + account.getAccountNumber(), "127.0.0.1", "SUCCESS");
@@ -292,6 +307,12 @@ public class TransactionService {
                 .entryTimestamp(LocalDateTime.now())
                 .build();
         ledgerEntryRepository.save(creditEntry);
+
+        // Core Double-Entry General Ledger Posting: DR 2010-DEMAND-DEPOSITS-SAVINGS / CR 2010-DEMAND-DEPOSITS-SAVINGS
+        accountingEngineService.postTransactionAccountingEntry(
+                ref, "INTERNAL_TRANSFER", amount, source.getBranch(), currentUser,
+                request.getNarration() != null ? request.getNarration() : "Fund Transfer to " + destination.getAccountNumber()
+        );
 
         auditService.recordAudit(currentUser, "FUND_TRANSFER_EXECUTED", "TRANSACTION", ref,
                 "Transfer of INR " + amount + " from " + source.getAccountNumber() + " to " + destination.getAccountNumber(), "127.0.0.1", "SUCCESS");

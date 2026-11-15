@@ -173,6 +173,12 @@ public class AuthService {
     }
 
     @Transactional(readOnly = true)
+    public User getCurrentUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseThrow(() -> new UnauthorizedException("User not located: " + username));
+    }
+
+    @Transactional(readOnly = true)
     public UserProfileDto getCurrentUserProfile(String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UnauthorizedException("User profile not located"));

@@ -26,19 +26,22 @@ public class FixedDepositService {
     private final TransactionRepository transactionRepository;
     private final TransactionLedgerEntryRepository ledgerEntryRepository;
     private final AuditService auditService;
+    private final AccountingEngineService accountingEngineService;
 
     public FixedDepositService(FixedDepositRepository fixedDepositRepository,
                                BankAccountRepository bankAccountRepository,
                                CustomerRepository customerRepository,
                                TransactionRepository transactionRepository,
                                TransactionLedgerEntryRepository ledgerEntryRepository,
-                               AuditService auditService) {
+                               AuditService auditService,
+                               AccountingEngineService accountingEngineService) {
         this.fixedDepositRepository = fixedDepositRepository;
         this.bankAccountRepository = bankAccountRepository;
         this.customerRepository = customerRepository;
         this.transactionRepository = transactionRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.auditService = auditService;
+        this.accountingEngineService = accountingEngineService;
     }
 
     @Transactional
@@ -113,6 +116,12 @@ public class FixedDepositService {
                 .entryTimestamp(LocalDateTime.now())
                 .build();
         ledgerEntryRepository.save(debitEntry);
+
+        // Core Double-Entry General Ledger Posting: DR 2010-DEMAND-DEPOSITS-SAVINGS / CR 2030-TERM-DEPOSITS-FD
+        accountingEngineService.postTransactionAccountingEntry(
+                txnRef, "FD_CREATION", amount, sourceAccount.getBranch(), currentUser,
+                "Term Fixed Deposit creation: " + certNo
+        );
 
         auditService.recordAudit(currentUser, "FD_CREATED", "TERM_DEPOSIT", certNo,
                 "Fixed Deposit created for INR " + amount + " at " + rate + "% for " + months + " months", "127.0.0.1", "SUCCESS");

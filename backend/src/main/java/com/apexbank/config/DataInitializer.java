@@ -11,7 +11,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.*;
 
 @Component
@@ -36,6 +38,9 @@ public class DataInitializer implements CommandLineRunner {
     private final ApprovalRequestRepository approvalRequestRepository;
     private final BeneficiaryRepository beneficiaryRepository;
     private final AuditLogRepository auditLogRepository;
+    private final GLAccountRepository glAccountRepository;
+    private final AccountingRuleMappingRepository ruleMappingRepository;
+    private final AccountingPeriodRepository accountingPeriodRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(RoleRepository roleRepository,
@@ -55,6 +60,9 @@ public class DataInitializer implements CommandLineRunner {
                            ApprovalRequestRepository approvalRequestRepository,
                            BeneficiaryRepository beneficiaryRepository,
                            AuditLogRepository auditLogRepository,
+                           GLAccountRepository glAccountRepository,
+                           AccountingRuleMappingRepository ruleMappingRepository,
+                           AccountingPeriodRepository accountingPeriodRepository,
                            PasswordEncoder passwordEncoder) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
@@ -73,6 +81,9 @@ public class DataInitializer implements CommandLineRunner {
         this.approvalRequestRepository = approvalRequestRepository;
         this.beneficiaryRepository = beneficiaryRepository;
         this.auditLogRepository = auditLogRepository;
+        this.glAccountRepository = glAccountRepository;
+        this.ruleMappingRepository = ruleMappingRepository;
+        this.accountingPeriodRepository = accountingPeriodRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -81,8 +92,11 @@ public class DataInitializer implements CommandLineRunner {
     public void run(String... args) {
         log.info("Checking and initializing institutional banking seed data...");
 
+        // Ensure Double-Entry Accounting Engine & Chart of Accounts is initialized
+        seedDoubleEntryAccountingEngine();
+
         if (roleRepository.count() > 0 && userRepository.count() > 0 && bankAccountRepository.count() > 0) {
-            log.info("Institutional database already populated. Skipping seed sequence.");
+            log.info("Institutional database already populated. Skipping core seed sequence.");
             return;
         }
 
@@ -808,5 +822,94 @@ public class DataInitializer implements CommandLineRunner {
                 .details("Dual-key safe vault unlocked with opening balance INR 2,50,00,000.00")
                 .eventTimestamp(LocalDateTime.now().minusHours(1))
                 .build());
+    }
+
+    private void seedDoubleEntryAccountingEngine() {
+        if (glAccountRepository.count() > 0 && ruleMappingRepository.count() > 0) {
+            log.info("Double-entry Chart of Accounts already populated.");
+            return;
+        }
+
+        log.info("Seeding institutional Double-Entry Chart of Accounts & Rule Mappings...");
+
+        // Seed Chart of Accounts
+        String[][] coaDefs = {
+            // Assets (1000s)
+            {"1010-CASH-VAULT", "Branch Cash Vault & Counter Currency", "ASSET", "DEBIT", "Physical currency notes held in cash drawers and branch vaults"},
+            {"1020-LOANS-ADVANCES", "Retail & Commercial Loan Portfolio", "ASSET", "DEBIT", "Outstanding principal advances disbursed to retail and corporate clients"},
+            {"1030-INTER-BRANCH-CLEARING", "Inter-Branch Transit & Settlement", "ASSET", "DEBIT", "Inter-branch clearing settlement transit account"},
+            {"1040-RBI-RESERVE-BALANCE", "Reserve Bank of India CRR/SLR Reserves", "ASSET", "DEBIT", "Statutory liquid reserves deposited with central regulatory body"},
+
+            // Liabilities (2000s)
+            {"2010-DEMAND-DEPOSITS-SAVINGS", "Customer Savings Account Deposits", "LIABILITY", "CREDIT", "Demand deposit liability owed to retail savings account holders"},
+            {"2020-DEMAND-DEPOSITS-CURRENT", "Commercial Current Account Deposits", "LIABILITY", "CREDIT", "Demand deposit liability owed to corporate current account holders"},
+            {"2030-TERM-DEPOSITS-FD", "Term Fixed Deposit Liabilities", "LIABILITY", "CREDIT", "Fixed time deposit commitments with contracted maturities"},
+            {"2040-RECURRING-DEPOSITS-RD", "Recurring Deposit Liabilities", "LIABILITY", "CREDIT", "Monthly installment term deposit commitments"},
+            {"2050-INTER-BRANCH-PAYABLE", "Due to Other Branches (Clearing)", "LIABILITY", "CREDIT", "Clearing obligations payable to counterparty branches"},
+
+            // Equity (3000s)
+            {"3010-SHARE-CAPITAL", "Apex Bank Paid-Up Equity Capital", "EQUITY", "CREDIT", "Tier-1 regulatory paid-up equity capital"},
+            {"3020-RETAINED-EARNINGS", "Statutory Reserves & Retained Surplus", "EQUITY", "CREDIT", "Cumulative audited banking earnings retained in reserve fund"},
+
+            // Revenue (4000s)
+            {"4010-INTEREST-INCOME-LOANS", "Interest Income on Credit Advances", "REVENUE", "CREDIT", "Interest revenue earned from retail and commercial loan servicing"},
+            {"4020-FEE-COMMISSION-INCOME", "Transaction Processing & Service Fees", "REVENUE", "CREDIT", "Interbank transfer clearing fees, penalties, and commissions"},
+
+            // Expenses (5000s)
+            {"5010-INTEREST-EXPENSE-DEPOSITS", "Interest Paid on Customer Deposits", "EXPENSE", "DEBIT", "Quarterly interest expense credited to customer savings & term accounts"},
+            {"5020-OPERATING-EXPENSES", "Branch Operations & Administration", "EXPENSE", "DEBIT", "General operational overhead, IT infrastructure, and branch facilities"}
+        };
+
+        for (String[] def : coaDefs) {
+            glAccountRepository.findByAccountCode(def[0]).orElseGet(() ->
+                glAccountRepository.save(GLAccount.builder()
+                    .accountCode(def[0])
+                    .accountName(def[1])
+                    .classification(AccountClassification.valueOf(def[2]))
+                    .normalBalance(def[3])
+                    .currentBalance(BigDecimal.ZERO)
+                    .currency("INR")
+                    .isActive(true)
+                    .description(def[4])
+                    .build())
+            );
+        }
+
+        // Seed Accounting Rule Mappings
+        String[][] ruleDefs = {
+            {"CASH_DEPOSIT", "1010-CASH-VAULT", "2010-DEMAND-DEPOSITS-SAVINGS", "Cash received at branch counter credited to customer savings liability"},
+            {"CASH_WITHDRAWAL", "2010-DEMAND-DEPOSITS-SAVINGS", "1010-CASH-VAULT", "Cash payout at branch counter debited from customer savings liability"},
+            {"INTERNAL_TRANSFER", "2010-DEMAND-DEPOSITS-SAVINGS", "2010-DEMAND-DEPOSITS-SAVINGS", "Intrabank transfer between customer deposit accounts"},
+            {"LOAN_DISBURSEMENT", "1020-LOANS-ADVANCES", "2010-DEMAND-DEPOSITS-SAVINGS", "Sanctioned loan advance credited to customer savings deposit account"},
+            {"FD_CREATION", "2010-DEMAND-DEPOSITS-SAVINGS", "2030-TERM-DEPOSITS-FD", "Customer savings deposit transferred to Term Fixed Deposit commitment"},
+            {"LOAN_REPAYMENT", "2010-DEMAND-DEPOSITS-SAVINGS", "1020-LOANS-ADVANCES", "Customer monthly repayment reducing outstanding credit advance"}
+        };
+
+        for (String[] r : ruleDefs) {
+            ruleMappingRepository.findByEventCodeAndIsActiveTrue(r[0]).orElseGet(() ->
+                ruleMappingRepository.save(AccountingRuleMapping.builder()
+                    .eventCode(r[0])
+                    .debitAccountCode(r[1])
+                    .creditAccountCode(r[2])
+                    .description(r[3])
+                    .isActive(true)
+                    .build())
+            );
+        }
+
+        // Seed Initial Open Accounting Period
+        LocalDate now = LocalDate.now();
+        String periodName = "PERIOD-" + now.format(DateTimeFormatter.ofPattern("yyyyMM"));
+        accountingPeriodRepository.findByPeriodName(periodName).orElseGet(() ->
+            accountingPeriodRepository.save(AccountingPeriod.builder()
+                .periodName(periodName)
+                .periodType("MONTHLY")
+                .startDate(now.withDayOfMonth(1))
+                .endDate(now.withDayOfMonth(now.lengthOfMonth()))
+                .status("OPEN")
+                .build())
+        );
+
+        log.info("Institutional Chart of Accounts & Rule Mappings successfully initialized!");
     }
 }

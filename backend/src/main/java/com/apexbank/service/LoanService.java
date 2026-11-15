@@ -33,6 +33,7 @@ public class LoanService {
     private final TransactionRepository transactionRepository;
     private final TransactionLedgerEntryRepository ledgerEntryRepository;
     private final AuditService auditService;
+    private final AccountingEngineService accountingEngineService;
 
     public LoanService(LoanApplicationRepository loanApplicationRepository,
                        LoanRepository loanRepository,
@@ -42,7 +43,8 @@ public class LoanService {
                        BankAccountRepository bankAccountRepository,
                        TransactionRepository transactionRepository,
                        TransactionLedgerEntryRepository ledgerEntryRepository,
-                       AuditService auditService) {
+                       AuditService auditService,
+                       AccountingEngineService accountingEngineService) {
         this.loanApplicationRepository = loanApplicationRepository;
         this.loanRepository = loanRepository;
         this.loanRepaymentRepository = loanRepaymentRepository;
@@ -52,6 +54,7 @@ public class LoanService {
         this.transactionRepository = transactionRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.auditService = auditService;
+        this.accountingEngineService = accountingEngineService;
     }
 
     @Transactional
@@ -181,6 +184,12 @@ public class LoanService {
                     .entryTimestamp(LocalDateTime.now())
                     .build();
             ledgerEntryRepository.save(creditEntry);
+
+            // Core Double-Entry General Ledger Posting: DR 1020-LOANS-ADVANCES / CR 2010-DEMAND-DEPOSITS-SAVINGS
+            accountingEngineService.postTransactionAccountingEntry(
+                    txnRef, "LOAN_DISBURSEMENT", principal, app.getBranch(), sanctioningOfficer,
+                    "Loan facility disbursement for " + loanAccNo
+            );
         }
 
         auditService.recordAudit(sanctioningOfficer, "LOAN_SANCTIONED", "LENDING", loanAccNo,
