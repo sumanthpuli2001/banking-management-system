@@ -55,6 +55,12 @@ export const Sidebar: React.FC = () => {
           allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR'],
         },
         {
+          name: 'Regulatory & Liquidity Hub',
+          path: '/regulatory',
+          icon: ShieldCheck,
+          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR'],
+        },
+        {
           name: 'My Retail Banking',
           path: '/customer-portal',
           icon: UserCheck,

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { ApiResponse } from '../types/auth';
 import { HeadOfficeDashboardSummary } from '../types/dashboard';
@@ -168,6 +169,7 @@ const INITIAL_DASHBOARD_DATA: HeadOfficeDashboardSummary = {
 };
 
 export const HeadOfficeDashboardPage: React.FC = () => {
+  const navigate = useNavigate();
   const [data, setData] = useState<HeadOfficeDashboardSummary>(INITIAL_DASHBOARD_DATA);
   const [refreshing, setRefreshing] = useState(false);
   const [selectedRegion, setSelectedRegion] = useState('ALL');
@@ -323,12 +325,20 @@ export const HeadOfficeDashboardPage: React.FC = () => {
           </p>
           <span className="text-[10px] text-slate-400 font-mono">Verified KYC</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition">
-          <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Reserve Ratio</p>
+        <div 
+          onClick={() => navigate('/regulatory')}
+          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-400 hover:shadow-md cursor-pointer transition group"
+        >
+          <div className="flex items-center justify-between">
+            <p className="text-[10px] font-bold text-slate-400 uppercase font-mono group-hover:text-emerald-700">Reserve Ratio</p>
+            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          </div>
           <p className="text-xl font-black text-emerald-700 mt-1 font-sans">
             {data.reserveLiquidityRatio}%
           </p>
-          <span className="text-[10px] text-emerald-600 font-bold font-mono">CRR/SLR Compliant</span>
+          <span className="text-[10px] text-emerald-600 font-bold font-mono flex items-center gap-1">
+            CRR/SLR Hub <span className="text-[9px]">→</span>
+          </span>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition">
           <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Day Velocity</p>

@@ -22,15 +22,18 @@ public class DashboardService {
     private final RegionRepository regionRepository;
     private final UserRepository userRepository;
     private final AuditLogRepository auditLogRepository;
+    private final com.apexbank.service.regulatory.RegulatoryLiquidityService regulatoryLiquidityService;
 
     public DashboardService(BranchRepository branchRepository,
                             RegionRepository regionRepository,
                             UserRepository userRepository,
-                            AuditLogRepository auditLogRepository) {
+                            AuditLogRepository auditLogRepository,
+                            com.apexbank.service.regulatory.RegulatoryLiquidityService regulatoryLiquidityService) {
         this.branchRepository = branchRepository;
         this.regionRepository = regionRepository;
         this.userRepository = userRepository;
         this.auditLogRepository = auditLogRepository;
+        this.regulatoryLiquidityService = regulatoryLiquidityService;
     }
 
     @Transactional(readOnly = true)
@@ -45,7 +48,9 @@ public class DashboardService {
         BigDecimal todayDeposits = new BigDecimal("42600000.00");   // 42.6 Million INR
         BigDecimal todayWithdrawals = new BigDecimal("28150000.00"); // 28.15 Million INR
         BigDecimal netClearing = todayDeposits.subtract(todayWithdrawals);
-        BigDecimal liquidityRatio = new BigDecimal("24.8"); // 24.8%
+        BigDecimal liquidityRatio = regulatoryLiquidityService != null 
+                ? regulatoryLiquidityService.calculateDynamicReserveRatio() 
+                : new BigDecimal("24.8");
 
         long activeCustomers = 14820;
         long activeAccounts = 19450;

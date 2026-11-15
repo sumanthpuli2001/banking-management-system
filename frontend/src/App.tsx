@@ -18,6 +18,7 @@ import { ApprovalCenterPage } from './pages/ApprovalCenterPage';
 import { AuditCompliancePage } from './pages/AuditCompliancePage';
 import { AccountingGeneralLedgerPage } from './pages/AccountingGeneralLedgerPage';
 import { TransactionReconciliationPage } from './pages/TransactionReconciliationPage';
+import { RegulatoryLiquidityPage } from './pages/RegulatoryLiquidityPage';
 import { CustomerPortalPage } from './pages/CustomerPortalPage';
 import { PlaceholderModulePage } from './pages/PlaceholderModulePage';
 
@@ -79,6 +80,8 @@ export const App: React.FC = () => {
               <Route path="/deposits/term" element={<TermDepositPage />} />
 
               {/* Governance, Accounting & Audit */}
+              <Route path="/regulatory" element={<RegulatoryLiquidityPage />} />
+              <Route path="/liquidity" element={<RegulatoryLiquidityPage />} />
               <Route path="/accounting" element={<AccountingGeneralLedgerPage />} />
               <Route path="/reconciliation" element={<TransactionReconciliationPage />} />
               <Route path="/approvals" element={<ApprovalCenterPage />} />

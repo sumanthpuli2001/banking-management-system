@@ -41,6 +41,9 @@ public class DataInitializer implements CommandLineRunner {
     private final GLAccountRepository glAccountRepository;
     private final AccountingRuleMappingRepository ruleMappingRepository;
     private final AccountingPeriodRepository accountingPeriodRepository;
+    private final com.apexbank.repository.regulatory.RegulatoryConfigRepository regulatoryConfigRepository;
+    private final com.apexbank.repository.regulatory.EligibleLiquidAssetRepository eligibleLiquidAssetRepository;
+    private final com.apexbank.repository.regulatory.RegulatoryReportingPeriodRepository regulatoryReportingPeriodRepository;
     private final PasswordEncoder passwordEncoder;
 
     public DataInitializer(RoleRepository roleRepository,
@@ -63,6 +66,9 @@ public class DataInitializer implements CommandLineRunner {
                            GLAccountRepository glAccountRepository,
                            AccountingRuleMappingRepository ruleMappingRepository,
                            AccountingPeriodRepository accountingPeriodRepository,
+                           com.apexbank.repository.regulatory.RegulatoryConfigRepository regulatoryConfigRepository,
+                           com.apexbank.repository.regulatory.EligibleLiquidAssetRepository eligibleLiquidAssetRepository,
+                           com.apexbank.repository.regulatory.RegulatoryReportingPeriodRepository regulatoryReportingPeriodRepository,
                            PasswordEncoder passwordEncoder) {
         this.roleRepository = roleRepository;
         this.permissionRepository = permissionRepository;
@@ -84,6 +90,9 @@ public class DataInitializer implements CommandLineRunner {
         this.glAccountRepository = glAccountRepository;
         this.ruleMappingRepository = ruleMappingRepository;
         this.accountingPeriodRepository = accountingPeriodRepository;
+        this.regulatoryConfigRepository = regulatoryConfigRepository;
+        this.eligibleLiquidAssetRepository = eligibleLiquidAssetRepository;
+        this.regulatoryReportingPeriodRepository = regulatoryReportingPeriodRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -94,6 +103,9 @@ public class DataInitializer implements CommandLineRunner {
 
         // Ensure Double-Entry Accounting Engine & Chart of Accounts is initialized
         seedDoubleEntryAccountingEngine();
+
+        // Ensure Regulatory & Liquidity Management parameters are initialized
+        seedRegulatoryAndLiquidityManagement();
 
         if (roleRepository.count() > 0 && userRepository.count() > 0 && bankAccountRepository.count() > 0) {
             log.info("Institutional database already populated. Skipping core seed sequence.");
@@ -915,5 +927,128 @@ public class DataInitializer implements CommandLineRunner {
         );
 
         log.info("Institutional Chart of Accounts & Rule Mappings successfully initialized!");
+    }
+
+    private void seedRegulatoryAndLiquidityManagement() {
+        if (regulatoryConfigRepository.count() > 0 && eligibleLiquidAssetRepository.count() > 0) {
+            log.info("Regulatory and Liquidity Management records already populated.");
+            return;
+        }
+
+        log.info("Seeding institutional Regulatory Configurations, Reporting Fortnights, and Sovereign Liquid Assets...");
+
+        // 1. Seed Configurable Regulatory Rates (RBI Act & BR Act)
+        String[][] regConfigs = {
+            {"CRR_RATE", "Cash Reserve Ratio", "4.5000", "%", "2026-04-01", "RBI/2026-27/04 DOR.RET.REC.09/12.01.001/2026-27 Section 42(1) RBI Act", "Statutory minimum cash reserves maintained with Reserve Bank of India as a percentage of NDTL"},
+            {"SLR_RATE", "Statutory Liquidity Ratio", "18.0000", "%", "2026-04-01", "RBI/2026-27/08 DOR.RET.REC.15/12.02.001/2026-27 Section 24 BR Act", "Mandatory unencumbered liquid assets maintained in approved sovereign securities, treasury bills, and cash"},
+            {"MIN_DAILY_CRR_MAINTENANCE_PCT", "Minimum Daily CRR Requirement", "90.0000", "%", "2026-04-01", "RBI Master Direction - Reserve Requirements 2026", "Mandatory minimum daily balance of CRR required to be held with RBI on any single business day"},
+            {"PENAL_INTEREST_RATE_CRR_DEFICIT", "Penal Interest Rate for CRR Deficit", "3.0000", "%", "2026-04-01", "Section 42(3) of RBI Act, 1934", "Penal interest charged over Bank Rate for default in maintenance of prescribed cash reserves"}
+        };
+
+        for (String[] c : regConfigs) {
+            regulatoryConfigRepository.findByParameterKey(c[0]).orElseGet(() ->
+                regulatoryConfigRepository.save(com.apexbank.entity.regulatory.RegulatoryConfig.builder()
+                    .parameterKey(c[0])
+                    .parameterName(c[1])
+                    .parameterValue(new BigDecimal(c[2]))
+                    .unit(c[3])
+                    .effectiveDate(LocalDate.parse(c[4]))
+                    .sourceCircularReference(c[5])
+                    .description(c[6])
+                    .isActive(true)
+                    .updatedBy("RBI_STATUTORY_DIRECTIVE")
+                    .build())
+            );
+        }
+
+        // 2. Seed Eligible Sovereign Liquid Assets for SLR
+        if (eligibleLiquidAssetRepository.count() == 0) {
+            LocalDate today = LocalDate.now();
+            List<com.apexbank.entity.regulatory.EligibleLiquidAsset> assets = List.of(
+                com.apexbank.entity.regulatory.EligibleLiquidAsset.builder()
+                    .assetIdentifier("IN0020230085")
+                    .assetName("7.18% Central Government Security 2033 (Benchmark G-Sec)")
+                    .assetType("CENTRAL_GOVT_SECURITY")
+                    .faceValue(new BigDecimal("2500000000.00"))
+                    .bookValue(new BigDecimal("2485000000.00"))
+                    .marketValue(new BigDecimal("2512000000.00"))
+                    .couponRate(new BigDecimal("7.1800"))
+                    .maturityDate(LocalDate.of(2033, 8, 14))
+                    .isEncumbered(false)
+                    .custodyDepository("RBI_SGL_ACCOUNT")
+                    .valuationDate(today)
+                    .build(),
+                com.apexbank.entity.regulatory.EligibleLiquidAsset.builder()
+                    .assetIdentifier("IN0020210012")
+                    .assetName("6.54% Central Government Security 2032")
+                    .assetType("CENTRAL_GOVT_SECURITY")
+                    .faceValue(new BigDecimal("1200000000.00"))
+                    .bookValue(new BigDecimal("1180000000.00"))
+                    .marketValue(new BigDecimal("1195000000.00"))
+                    .couponRate(new BigDecimal("6.5400"))
+                    .maturityDate(LocalDate.of(2032, 1, 17))
+                    .isEncumbered(false)
+                    .custodyDepository("RBI_SGL_ACCOUNT")
+                    .valuationDate(today)
+                    .build(),
+                com.apexbank.entity.regulatory.EligibleLiquidAsset.builder()
+                    .assetIdentifier("IN1920230114")
+                    .assetName("7.42% Maharashtra State Development Loan (SDL) 2033")
+                    .assetType("STATE_DEV_LOAN")
+                    .faceValue(new BigDecimal("600000000.00"))
+                    .bookValue(new BigDecimal("598000000.00"))
+                    .marketValue(new BigDecimal("602500000.00"))
+                    .couponRate(new BigDecimal("7.4200"))
+                    .maturityDate(LocalDate.of(2033, 11, 22))
+                    .isEncumbered(false)
+                    .custodyDepository("RBI_SGL_ACCOUNT")
+                    .valuationDate(today)
+                    .build(),
+                com.apexbank.entity.regulatory.EligibleLiquidAsset.builder()
+                    .assetIdentifier("IN002023X048")
+                    .assetName("Government of India 91-Day Treasury Bill")
+                    .assetType("TREASURY_BILL")
+                    .faceValue(new BigDecimal("400000000.00"))
+                    .bookValue(new BigDecimal("393200000.00"))
+                    .marketValue(new BigDecimal("396800000.00"))
+                    .couponRate(new BigDecimal("6.8500"))
+                    .maturityDate(today.plusDays(45))
+                    .isEncumbered(false)
+                    .custodyDepository("CLEARING_CORP_OF_INDIA")
+                    .valuationDate(today)
+                    .build()
+            );
+            eligibleLiquidAssetRepository.saveAll(assets);
+        }
+
+        // 3. Seed Regulatory Reporting Fortnights
+        if (regulatoryReportingPeriodRepository.count() == 0) {
+            LocalDate today = LocalDate.now();
+            List<com.apexbank.entity.regulatory.RegulatoryReportingPeriod> periods = List.of(
+                com.apexbank.entity.regulatory.RegulatoryReportingPeriod.builder()
+                    .periodName("RRF-2026-NOV-F1")
+                    .fortnightNumber(23)
+                    .reportingStartDate(today.withDayOfMonth(1))
+                    .reportingEndDate(today.withDayOfMonth(14))
+                    .submissionDeadline(today.withDayOfMonth(21))
+                    .reportingStatus("SIMULATED_REPORTED")
+                    .ndtlBasisAmount(new BigDecimal("1845200000.00"))
+                    .formASubmittedAt(LocalDateTime.now().minusDays(1))
+                    .submittedBy("COMPLIANCE_DIRECTOR")
+                    .build(),
+                com.apexbank.entity.regulatory.RegulatoryReportingPeriod.builder()
+                    .periodName("RRF-2026-NOV-F2")
+                    .fortnightNumber(24)
+                    .reportingStartDate(today.withDayOfMonth(15))
+                    .reportingEndDate(today.withDayOfMonth(today.lengthOfMonth()))
+                    .submissionDeadline(today.plusMonths(1).withDayOfMonth(7))
+                    .reportingStatus("ACTIVE_ACCUMULATING")
+                    .ndtlBasisAmount(null)
+                    .build()
+            );
+            regulatoryReportingPeriodRepository.saveAll(periods);
+        }
+
+        log.info("Institutional Regulatory and Liquidity Management records successfully initialized!");
     }
 }
