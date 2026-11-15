@@ -16,7 +16,8 @@ import {
   ChevronDown,
   Layers,
   ShieldCheck,
-  BookOpen
+  BookOpen,
+  Scale
 } from 'lucide-react';
 
 interface NavItem {
@@ -142,6 +143,12 @@ export const Sidebar: React.FC = () => {
           name: 'General Ledger & COA',
           path: '/accounting',
           icon: BookOpen,
+          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER'],
+        },
+        {
+          name: 'Ledger Reconciliation',
+          path: '/reconciliation',
+          icon: Scale,
           allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER'],
         },
         {

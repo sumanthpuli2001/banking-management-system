@@ -55,6 +55,16 @@ public class Transaction extends BaseAuditableEntity {
     @Builder.Default
     private TransactionStatus status = TransactionStatus.INITIATED;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "accounting_posting_status", length = 30)
+    @Builder.Default
+    private AccountingPostingStatus accountingPostingStatus = AccountingPostingStatus.POSTED_BALANCED;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "external_payment_status", length = 30)
+    @Builder.Default
+    private ExternalPaymentStatus externalPaymentStatus = ExternalPaymentStatus.INTERNAL;
+
     @Column(name = "payment_channel", length = 40)
     @Builder.Default
     private String paymentChannel = "BRANCH_COUNTER"; // BRANCH_COUNTER, INTERNET_BANKING, CLEARING_HOUSE
@@ -73,7 +83,28 @@ public class Transaction extends BaseAuditableEntity {
     @Column(name = "failure_reason", length = 255)
     private String failureReason;
 
+    @Column(name = "settled_at", columnDefinition = "DATETIME")
+    private LocalDateTime settledAt;
+
+    @Column(name = "reconciled_at", columnDefinition = "DATETIME")
+    private LocalDateTime reconciledAt;
+
     @Column(name = "transaction_timestamp", columnDefinition = "DATETIME", nullable = false)
     @Builder.Default
     private LocalDateTime transactionTimestamp = LocalDateTime.now();
+
+    public void transitionTo(TransactionStatus newStatus) {
+        if (!this.status.canTransitionTo(newStatus)) {
+            throw new IllegalStateException(String.format(
+                "Invalid transaction lifecycle transition from %s to %s for reference %s",
+                this.status, newStatus, this.referenceNumber
+            ));
+        }
+        this.status = newStatus;
+        if (newStatus == TransactionStatus.SETTLED || newStatus == TransactionStatus.SUCCESS) {
+            this.settledAt = LocalDateTime.now();
+        } else if (newStatus == TransactionStatus.RECONCILED) {
+            this.reconciledAt = LocalDateTime.now();
+        }
+    }
 }

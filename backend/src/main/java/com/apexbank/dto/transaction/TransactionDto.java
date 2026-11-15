@@ -1,5 +1,7 @@
 package com.apexbank.dto.transaction;
 
+import com.apexbank.entity.AccountingPostingStatus;
+import com.apexbank.entity.ExternalPaymentStatus;
 import com.apexbank.entity.TransactionStatus;
 import com.apexbank.entity.TransactionType;
 import lombok.*;
@@ -24,11 +26,15 @@ public class TransactionDto {
     private BigDecimal fee;
     private TransactionType transactionType;
     private TransactionStatus status;
+    private AccountingPostingStatus accountingPostingStatus;
+    private ExternalPaymentStatus externalPaymentStatus;
     private String paymentChannel;
     private String narration;
     private String initiatedByUsername;
     private Long branchId;
     private String branchName;
     private String failureReason;
+    private LocalDateTime settledAt;
+    private LocalDateTime reconciledAt;
     private LocalDateTime transactionTimestamp;
 }

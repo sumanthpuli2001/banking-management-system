@@ -1,0 +1,9 @@
+package com.apexbank.entity;
+
+public enum ReconciliationType {
+    BRANCH_CASH_VS_LEDGER,
+    CUSTOMER_ACCOUNTS_VS_LEDGER,
+    INTERNAL_TRANSFER_INTEGRITY,
+    EXTERNAL_PAYMENT_VS_LEDGER,
+    DAILY_TRANSACTION_TOTALS
+}

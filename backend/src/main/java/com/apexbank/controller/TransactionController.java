@@ -86,4 +86,20 @@ public class TransactionController {
         Page<LedgerEntryDto> ledger = transactionService.getAccountLedger(accountNumber, pageable);
         return ResponseEntity.ok(ApiResponse.ok(ledger));
     }
+
+    @GetMapping("/{id}/lifecycle")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER', 'AUDITOR', 'CASHIER', 'BANK_EMPLOYEE', 'CUSTOMER')")
+    @Operation(summary = "Get Transaction Full Lifecycle History", description = "Retrieves stage-by-stage lifecycle timeline, business state, accounting posting status, and settlement milestones")
+    public ResponseEntity<ApiResponse<TransactionLifecycleDto>> getLifecycle(@PathVariable Long id) {
+        TransactionLifecycleDto lifecycle = transactionService.getTransactionLifecycle(id);
+        return ResponseEntity.ok(ApiResponse.ok(lifecycle));
+    }
+
+    @GetMapping("/reference/{referenceNumber}/lifecycle")
+    @PreAuthorize("hasAnyRole('SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER', 'AUDITOR', 'CASHIER', 'BANK_EMPLOYEE', 'CUSTOMER')")
+    @Operation(summary = "Get Transaction Lifecycle by Reference", description = "Retrieves stage-by-stage lifecycle timeline by reference number")
+    public ResponseEntity<ApiResponse<TransactionLifecycleDto>> getLifecycleByReference(@PathVariable String referenceNumber) {
+        TransactionLifecycleDto lifecycle = transactionService.getTransactionLifecycleByReference(referenceNumber);
+        return ResponseEntity.ok(ApiResponse.ok(lifecycle));
+    }
 }
