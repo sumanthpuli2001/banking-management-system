@@ -2,7 +2,7 @@
 -- APEX NATIONAL BANK (BMS v2.4) - DATABASE BASELINE BACKUP
 -- Created for Phase 1 Safety Audit
 -- Host: TiDB Cloud Serverless (enterprise_bank_db)
--- Timestamp: Sun Nov 15 14:30:04 IST 2026
+-- Timestamp: Sun Nov 15 15:10:20 IST 2026
 -- =====================================================
 
 -- Table structure for table: account_status_history
@@ -55,6 +55,84 @@ CREATE TABLE `accounting_rule_mappings` (
   `is_active` bit(1) NOT NULL,
   PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
   UNIQUE KEY `UKb2j97k9cd19e9r03xk1jjb225` (`event_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=30001;
+
+-- Table structure for table: aml_alerts
+CREATE TABLE `aml_alerts` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `account_number` varchar(40) DEFAULT NULL,
+  `alert_number` varchar(50) NOT NULL,
+  `assigned_officer` varchar(60) DEFAULT NULL,
+  `closed_timestamp` datetime(6) DEFAULT NULL,
+  `closure_reason` varchar(255) DEFAULT NULL,
+  `customer_id` bigint NOT NULL,
+  `customer_name` varchar(120) DEFAULT NULL,
+  `customer_number` varchar(40) DEFAULT NULL,
+  `customer_risk_category` varchar(30) DEFAULT NULL,
+  `detected_timestamp` datetime(6) NOT NULL,
+  `detection_score` int DEFAULT NULL,
+  `escalated_timestamp` datetime(6) DEFAULT NULL,
+  `fiu_str_reference` varchar(80) DEFAULT NULL,
+  `rule_code` varchar(50) NOT NULL,
+  `rule_name` varchar(120) NOT NULL,
+  `severity` varchar(20) NOT NULL,
+  `status` varchar(30) NOT NULL,
+  `transaction_amount` decimal(18,4) DEFAULT NULL,
+  `transaction_reference` varchar(64) DEFAULT NULL,
+  `transaction_type` varchar(40) DEFAULT NULL,
+  `trigger_details` text DEFAULT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
+  KEY `idx_aml_status` (`status`),
+  KEY `idx_aml_severity` (`severity`),
+  KEY `idx_aml_cust` (`customer_id`),
+  UNIQUE KEY `idx_aml_alert_num` (`alert_number`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- Table structure for table: aml_case_notes
+CREATE TABLE `aml_case_notes` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `action_taken` varchar(60) NOT NULL,
+  `alert_id` bigint NOT NULL,
+  `author_username` varchar(60) NOT NULL,
+  `is_confidential` bit(1) DEFAULT NULL,
+  `note_text` text NOT NULL,
+  `recorded_at` datetime(6) NOT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
+  KEY `idx_case_note_alert` (`alert_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- Table structure for table: aml_rule_configs
+CREATE TABLE `aml_rule_configs` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `effective_from` datetime(6) DEFAULT NULL,
+  `is_active` bit(1) NOT NULL,
+  `is_regulatory_report_required` bit(1) DEFAULT NULL,
+  `lookback_hours` int DEFAULT NULL,
+  `multiplier` decimal(6,2) DEFAULT NULL,
+  `rule_code` varchar(60) NOT NULL,
+  `rule_name` varchar(120) NOT NULL,
+  `severity` varchar(20) NOT NULL,
+  `statutory_reference` varchar(120) DEFAULT NULL,
+  `threshold_amount` decimal(18,2) DEFAULT NULL,
+  `updated_by_officer` varchar(60) DEFAULT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
+  UNIQUE KEY `idx_aml_rule_code` (`rule_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=30001;
 
 -- Table structure for table: approval_requests
@@ -253,6 +331,38 @@ CREATE TABLE `customer_documents` (
   PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
   KEY `FKp8yxbfjsubcrp9pur4ejb9gtv` (`customer_id`),
   CONSTRAINT `FKp8yxbfjsubcrp9pur4ejb9gtv` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- Table structure for table: customer_kyc_profiles
+CREATE TABLE `customer_kyc_profiles` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `aadhaar_verification_source` varchar(60) DEFAULT NULL,
+  `aadhaar_verification_status` varchar(30) DEFAULT NULL,
+  `address_verification_status` varchar(30) DEFAULT NULL,
+  `cdd_status` varchar(30) NOT NULL,
+  `customer_id` bigint NOT NULL,
+  `document_expiry_date` date DEFAULT NULL,
+  `edd_approved_at` datetime(6) DEFAULT NULL,
+  `edd_approved_by` varchar(60) DEFAULT NULL,
+  `edd_beneficial_ownership` text DEFAULT NULL,
+  `edd_source_of_wealth` text DEFAULT NULL,
+  `edd_status` varchar(30) NOT NULL,
+  `is_pep` bit(1) NOT NULL,
+  `kyc_notes` text DEFAULT NULL,
+  `last_kyc_review_date` date DEFAULT NULL,
+  `next_kyc_review_due_date` date DEFAULT NULL,
+  `pan_verification_source` varchar(60) DEFAULT NULL,
+  `pan_verification_status` varchar(30) DEFAULT NULL,
+  `risk_category` varchar(20) NOT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
+  KEY `idx_kyc_due_date` (`next_kyc_review_due_date`),
+  KEY `idx_kyc_edd_status` (`edd_status`),
+  UNIQUE KEY `idx_kyc_cust_id` (`customer_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- Table structure for table: customers
@@ -542,6 +652,12 @@ CREATE TABLE `loan_applications` (
   `assigned_officer_id` bigint DEFAULT NULL,
   `branch_id` bigint NOT NULL,
   `customer_id` bigint NOT NULL,
+  `approval_hierarchy_level` varchar(60) DEFAULT NULL,
+  `bureau_status` varchar(40) DEFAULT NULL,
+  `credit_risk_grade` varchar(30) DEFAULT NULL,
+  `existing_monthly_obligations` decimal(18,2) DEFAULT NULL,
+  `foir_percentage` decimal(5,2) DEFAULT NULL,
+  `sanction_letter_reference` varchar(60) DEFAULT NULL,
   PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
   UNIQUE KEY `UKlmmebb2xnyy3oghe068hwcc1x` (`application_number`),
   KEY `FKs7ljqh0b7vv3vjwt1cb9dywdl` (`assigned_officer_id`),
@@ -550,6 +666,32 @@ CREATE TABLE `loan_applications` (
   CONSTRAINT `FKs7ljqh0b7vv3vjwt1cb9dywdl` FOREIGN KEY (`assigned_officer_id`) REFERENCES `users` (`id`),
   CONSTRAINT `FKj1u3a9qyuwkbayi44rg0gbj1x` FOREIGN KEY (`branch_id`) REFERENCES `branches` (`id`),
   CONSTRAINT `FKs6p85101r2lbn61hmgth4kwg2` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=30001;
+
+-- Table structure for table: loan_products
+CREATE TABLE `loan_products` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `base_interest_rate` decimal(5,2) NOT NULL,
+  `collateral_required` bit(1) DEFAULT NULL,
+  `description` text DEFAULT NULL,
+  `is_active` bit(1) NOT NULL,
+  `loan_type` varchar(40) NOT NULL,
+  `max_amount` decimal(18,2) NOT NULL,
+  `max_foir_percentage` decimal(5,2) DEFAULT NULL,
+  `max_tenure_months` int NOT NULL,
+  `min_amount` decimal(18,2) NOT NULL,
+  `min_credit_score` int DEFAULT NULL,
+  `min_tenure_months` int NOT NULL,
+  `processing_fee_percentage` decimal(5,2) DEFAULT NULL,
+  `product_code` varchar(50) NOT NULL,
+  `product_name` varchar(120) NOT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
+  UNIQUE KEY `idx_loan_product_code` (`product_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=30001;
 
 -- Table structure for table: loan_repayments
@@ -564,10 +706,39 @@ CREATE TABLE `loan_repayments` (
   `principal_component` decimal(18,2) DEFAULT NULL,
   `status` varchar(30) NOT NULL,
   `loan_id` bigint NOT NULL,
+  `payment_reference` varchar(64) DEFAULT NULL,
   PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
   KEY `FKmvfjvk48bhsvwbdis0s9uwn1t` (`loan_id`),
   CONSTRAINT `FKmvfjvk48bhsvwbdis0s9uwn1t` FOREIGN KEY (`loan_id`) REFERENCES `loans` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=30001;
+
+-- Table structure for table: loan_sanction_letters
+CREATE TABLE `loan_sanction_letters` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `approved_interest_rate` decimal(5,2) NOT NULL,
+  `approved_tenure_months` int NOT NULL,
+  `approving_authority_level` varchar(60) DEFAULT NULL,
+  `customer_id` bigint NOT NULL,
+  `customer_name` varchar(120) NOT NULL,
+  `loan_application_id` bigint NOT NULL,
+  `monthly_emi` decimal(18,2) NOT NULL,
+  `processing_fee_amount` decimal(18,2) DEFAULT NULL,
+  `sanction_date` date NOT NULL,
+  `sanction_reference` varchar(60) NOT NULL,
+  `sanctioned_amount` decimal(18,2) NOT NULL,
+  `sanctioning_officer_username` varchar(60) DEFAULT NULL,
+  `special_conditions` text DEFAULT NULL,
+  `status` varchar(30) NOT NULL,
+  `validity_expiry_date` date NOT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
+  KEY `idx_sanction_app_id` (`loan_application_id`),
+  UNIQUE KEY `idx_sanction_letter_num` (`sanction_reference`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- Table structure for table: loans
 CREATE TABLE `loans` (
@@ -593,6 +764,13 @@ CREATE TABLE `loans` (
   `branch_id` bigint NOT NULL,
   `customer_id` bigint NOT NULL,
   `loan_application_id` bigint DEFAULT NULL,
+  `accrued_penal_interest` decimal(18,2) DEFAULT NULL,
+  `asset_classification` varchar(30) NOT NULL,
+  `days_past_due` int DEFAULT NULL,
+  `provisioning_percentage` decimal(5,2) DEFAULT NULL,
+  `required_provision_amount` decimal(18,2) DEFAULT NULL,
+  `total_repaid_interest` decimal(18,2) DEFAULT NULL,
+  `total_repaid_principal` decimal(18,2) DEFAULT NULL,
   PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
   UNIQUE KEY `UKed3cs76y2fs1gm0guxj0jn5rd` (`loan_account_number`),
   UNIQUE KEY `UKkckam2gpweq2tsh67kghe8ih6` (`loan_application_id`),
