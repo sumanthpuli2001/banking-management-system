@@ -41,6 +41,7 @@ public class TransactionLifecycleAndReconciliationTest {
     @Mock private ApprovalRequestRepository approvalRequestRepository;
     @Mock private AuditService auditService;
     @Mock private com.apexbank.service.AccountingEngineService accountingEngineService;
+    @Mock private TellerCashDrawerRepository tellerCashDrawerRepository;
 
     private ReconciliationService reconciliationService;
     private TransactionService transactionService;
@@ -69,7 +70,8 @@ public class TransactionLifecycleAndReconciliationTest {
                 ledgerEntryRepository,
                 approvalRequestRepository,
                 auditService,
-                accountingEngineService
+                accountingEngineService,
+                tellerCashDrawerRepository
         );
 
         mainBranch = Branch.builder()

@@ -10,6 +10,7 @@ import { EmployeeManagementPage } from './pages/EmployeeManagementPage';
 import { CustomerManagementPage } from './pages/CustomerManagementPage';
 import { BankAccountManagementPage } from './pages/BankAccountManagementPage';
 import { CashierDeskPage } from './pages/CashierDeskPage';
+import { BranchCashManagementPage } from './pages/BranchCashManagementPage';
 import { FundTransferPage } from './pages/FundTransferPage';
 import { LoanDeskPage } from './pages/LoanDeskPage';
 import { TermDepositPage } from './pages/TermDepositPage';
@@ -66,7 +67,9 @@ export const App: React.FC = () => {
               <Route path="/customers" element={<CustomerManagementPage />} />
               <Route path="/accounts" element={<BankAccountManagementPage />} />
 
-              {/* Counter Transactions */}
+              {/* Counter Transactions & Cash Management */}
+              <Route path="/cashier" element={<BranchCashManagementPage />} />
+              <Route path="/branch-cash" element={<BranchCashManagementPage />} />
               <Route path="/deposits" element={<CashierDeskPage />} />
               <Route path="/withdrawals" element={<CashierDeskPage />} />
               <Route path="/transfers" element={<FundTransferPage />} />

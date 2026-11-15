@@ -109,7 +109,7 @@ export const Sidebar: React.FC = () => {
           name: 'Cashier Till & Vault',
           path: '/cashier',
           icon: Landmark,
-          allowedRoles: ['SUPER_ADMIN', 'BRANCH_MANAGER', 'CASHIER'],
+          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER', 'CASHIER', 'AUDITOR'],
         },
         {
           name: 'Fund Transfers',

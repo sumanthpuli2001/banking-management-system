@@ -31,6 +31,7 @@ public class TransactionService {
     private final ApprovalRequestRepository approvalRequestRepository;
     private final AuditService auditService;
     private final AccountingEngineService accountingEngineService;
+    private final TellerCashDrawerRepository tellerCashDrawerRepository;
 
     private static final BigDecimal MAKER_CHECKER_TRANSFER_THRESHOLD = new BigDecimal("500000.00");
     private static final BigDecimal AML_ALERT_THRESHOLD = new BigDecimal("1000000.00");
@@ -40,13 +41,15 @@ public class TransactionService {
                               TransactionLedgerEntryRepository ledgerEntryRepository,
                               ApprovalRequestRepository approvalRequestRepository,
                               AuditService auditService,
-                              AccountingEngineService accountingEngineService) {
+                              AccountingEngineService accountingEngineService,
+                              TellerCashDrawerRepository tellerCashDrawerRepository) {
         this.bankAccountRepository = bankAccountRepository;
         this.transactionRepository = transactionRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
         this.approvalRequestRepository = approvalRequestRepository;
         this.auditService = auditService;
         this.accountingEngineService = accountingEngineService;
+        this.tellerCashDrawerRepository = tellerCashDrawerRepository;
     }
 
     @Transactional(isolation = Isolation.READ_COMMITTED)
@@ -69,6 +72,15 @@ public class TransactionService {
         // Update Branch Vault Cash
         if (branch != null) {
             branch.setCashVaultBalance(branch.getCashVaultBalance().add(amount));
+        }
+
+        // Update Cashier Drawer if open
+        if (cashierUser != null) {
+            tellerCashDrawerRepository.findByAssignedCashierIdAndStatus(cashierUser.getId(), "OPEN")
+                    .ifPresent(d -> {
+                        d.addReceipt(amount);
+                        tellerCashDrawerRepository.save(d);
+                    });
         }
 
         Transaction transaction = Transaction.builder()
@@ -144,6 +156,15 @@ public class TransactionService {
         // Deduct vault cash
         if (branch != null) {
             branch.setCashVaultBalance(branch.getCashVaultBalance().subtract(amount));
+        }
+
+        // Update Cashier Drawer if open
+        if (cashierUser != null) {
+            tellerCashDrawerRepository.findByAssignedCashierIdAndStatus(cashierUser.getId(), "OPEN")
+                    .ifPresent(d -> {
+                        d.addPayment(amount);
+                        tellerCashDrawerRepository.save(d);
+                    });
         }
 
         Transaction transaction = Transaction.builder()
