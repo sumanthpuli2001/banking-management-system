@@ -14,4 +14,6 @@ public class ApprovalDecisionRequest {
     private String decision; // APPROVED or REJECTED
 
     private String checkerRemarks;
+
+    private String rejectionReason; // Mandatory if decision is REJECTED
 }

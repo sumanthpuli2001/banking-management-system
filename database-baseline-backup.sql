@@ -2,7 +2,7 @@
 -- APEX NATIONAL BANK (BMS v2.4) - DATABASE BASELINE BACKUP
 -- Created for Phase 1 Safety Audit
 -- Host: TiDB Cloud Serverless (enterprise_bank_db)
--- Timestamp: Sun Nov 15 15:10:20 IST 2026
+-- Timestamp: Sun Nov 15 15:25:32 IST 2026
 -- =====================================================
 
 -- Table structure for table: account_status_history
@@ -433,6 +433,33 @@ CREATE TABLE `daily_closings` (
   CONSTRAINT `FKtf3jouvlshcdaa95lh3v6kgtg` FOREIGN KEY (`verified_by_user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
+-- Table structure for table: deposit_products
+CREATE TABLE `deposit_products` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `base_interest_rate` decimal(5,2) NOT NULL,
+  `compounding_frequency` varchar(20) NOT NULL,
+  `deposit_type` varchar(30) NOT NULL,
+  `description` varchar(300) DEFAULT NULL,
+  `is_active` bit(1) NOT NULL,
+  `is_tax_saver` bit(1) NOT NULL,
+  `lock_in_months` int DEFAULT NULL,
+  `max_amount` decimal(18,2) NOT NULL,
+  `max_tenure_months` int NOT NULL,
+  `min_amount` decimal(18,2) NOT NULL,
+  `min_tenure_months` int NOT NULL,
+  `premature_penalty_rate` decimal(5,2) NOT NULL,
+  `product_code` varchar(40) NOT NULL,
+  `product_name` varchar(100) NOT NULL,
+  `senior_citizen_bonus_rate` decimal(5,2) NOT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
+  UNIQUE KEY `UKdg5sd9vbwn8ah7gpin97v0g6t` (`product_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=30001;
+
 -- Table structure for table: eligible_liquid_assets
 CREATE TABLE `eligible_liquid_assets` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -500,6 +527,26 @@ CREATE TABLE `fixed_deposits` (
   `branch_id` bigint NOT NULL,
   `customer_id` bigint NOT NULL,
   `source_account_id` bigint DEFAULT NULL,
+  `accrued_interest` decimal(18,2) DEFAULT NULL,
+  `closed_at` datetime(6) DEFAULT NULL,
+  `closed_by_username` varchar(50) DEFAULT NULL,
+  `compounding_frequency` varchar(20) DEFAULT NULL,
+  `deposit_type` varchar(30) DEFAULT NULL,
+  `installments_paid` int DEFAULT NULL,
+  `is_senior_citizen` bit(1) DEFAULT NULL,
+  `monthly_installment_amount` decimal(18,2) DEFAULT NULL,
+  `nominee_name` varchar(100) DEFAULT NULL,
+  `nominee_relation` varchar(50) DEFAULT NULL,
+  `payout_account_number` varchar(34) DEFAULT NULL,
+  `payout_amount` decimal(18,2) DEFAULT NULL,
+  `penalty_deducted` decimal(18,2) DEFAULT NULL,
+  `premature_penalty_rate` decimal(5,2) DEFAULT NULL,
+  `product_code` varchar(40) DEFAULT NULL,
+  `senior_citizen_bonus_rate` decimal(5,2) DEFAULT NULL,
+  `tax_deducted_at_source` decimal(18,2) DEFAULT NULL,
+  `tds_exemption_form_15g` bit(1) DEFAULT NULL,
+  `total_installments` int DEFAULT NULL,
+  `total_interest_payable` decimal(18,2) DEFAULT NULL,
   PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
   UNIQUE KEY `UKo8it65sp4nv0ghd33jytud71a` (`certificate_number`),
   KEY `FK18sr2gtdsc8shqg4w94cik1mq` (`branch_id`),

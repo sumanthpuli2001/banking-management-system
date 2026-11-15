@@ -22,7 +22,17 @@ public class ApprovalRequest extends BaseAuditableEntity {
     private Long id;
 
     @Column(name = "request_type", nullable = false, length = 50)
-    private String requestType; // HIGH_VALUE_TRANSFER, LOAN_SANCTION, ACCOUNT_FREEZE, ACCOUNT_CLOSURE, BRANCH_CREATION
+    private String requestType; // HIGH_VALUE_TRANSFER, LOAN_SANCTION, ACCOUNT_FREEZE, ACCOUNT_CLOSURE, CONFIGURATION_CHANGE, CASH_LIMIT_OVERRIDE
+
+    @Column(name = "rule_code", length = 50)
+    private String ruleCode;
+
+    @Column(name = "required_role", length = 50)
+    private String requiredRole; // BRANCH_MANAGER, REGIONAL_MANAGER, HEAD_OFFICE_ADMIN, SUPER_ADMIN
+
+    @Column(name = "risk_level", length = 20)
+    @Builder.Default
+    private String riskLevel = "MEDIUM"; // LOW, MEDIUM, HIGH, CRITICAL
 
     @Column(name = "target_entity_name", length = 50)
     private String targetEntityName; // Transaction, LoanApplication, BankAccount, Branch
@@ -50,7 +60,7 @@ public class ApprovalRequest extends BaseAuditableEntity {
 
     @Column(name = "status", nullable = false, length = 30)
     @Builder.Default
-    private String status = "PENDING"; // PENDING, APPROVED, REJECTED
+    private String status = "PENDING"; // PENDING, APPROVED, REJECTED, EXPIRED, ESCALATED
 
     @Column(name = "maker_remarks", length = 255)
     private String makerRemarks;
@@ -58,9 +68,28 @@ public class ApprovalRequest extends BaseAuditableEntity {
     @Column(name = "checker_remarks", length = 255)
     private String checkerRemarks;
 
+    @Column(name = "rejection_reason", length = 255)
+    private String rejectionReason;
+
+    @Column(name = "is_escalated", nullable = false)
+    @Builder.Default
+    private Boolean isEscalated = false;
+
+    @Column(name = "escalated_at")
+    private LocalDateTime escalatedAt;
+
+    @Column(name = "escalated_to_role", length = 50)
+    private String escalatedToRole;
+
+    @Column(name = "delegated_to_username", length = 50)
+    private String delegatedToUsername;
+
     @Column(name = "requested_at", columnDefinition = "DATETIME", nullable = false)
     @Builder.Default
     private LocalDateTime requestedAt = LocalDateTime.now();
+
+    @Column(name = "expires_at", columnDefinition = "DATETIME")
+    private LocalDateTime expiresAt;
 
     @Column(name = "decided_at", columnDefinition = "DATETIME")
     private LocalDateTime decidedAt;
