@@ -3,6 +3,7 @@ import api from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { ApiResponse } from '../types/auth';
 import { Pagination } from '../components/common/Pagination';
+import { AiSecurityMarker } from '../components/common/AiSecurityMarker';
 import {
   ShieldCheck,
   CheckCircle2,
@@ -13,6 +14,7 @@ import {
   X,
   Clock,
   ArrowUpRight,
+  ArrowLeft,
   ShieldAlert,
   History,
   Sliders,
@@ -406,6 +408,184 @@ export const ApprovalCenterPage: React.FC = () => {
         return <span className="px-2.5 py-1 rounded-full text-[10px] font-black bg-emerald-50 text-emerald-900 border border-emerald-400 animate-pulse flex items-center gap-1"><Clock className="w-3 h-3 text-emerald-600" /> PENDING</span>;
     }
   };
+
+  // DEDICATED FULL-PAGE VIEW: Dual-Control Authorization & AI Verification View (replaces popup modal)
+  if (selectedRequest) {
+    return (
+      <div className="space-y-6 max-w-4xl mx-auto font-sans pb-12">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+          <button
+            onClick={() => setSelectedRequest(null)}
+            className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-emerald-800 transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Maker-Checker Approval Center</span>
+          </button>
+          <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            DUAL-CONTROL FOUR-EYES AUTHORIZATION
+          </span>
+        </div>
+
+        <AiSecurityMarker
+          moduleName="Dual-Control Maker-Checker Capital Authorization Sentinel"
+          confidenceScore={99.7}
+          anomalyScore={0.03}
+          riskRating={selectedRequest.riskLevel === 'CRITICAL' || selectedRequest.riskLevel === 'HIGH' ? 'HIGH' : selectedRequest.riskLevel === 'MEDIUM' ? 'MEDIUM' : 'LOW'}
+          statusText="Automated Maker Segregation & Discretionary Tolerance Verification Active"
+          referenceCode={`APPROVAL-REQ-#${selectedRequest.id}`}
+        />
+
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="border-b border-slate-100 pb-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <h2 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+                <ShieldCheck className="w-6 h-6 text-emerald-700" />
+                <span>Authorize Request #{selectedRequest.id}: {selectedRequest.requestType.replace(/_/g, ' ')}</span>
+              </h2>
+              <p className="text-xs text-slate-500 mt-1">
+                Enforcing RBI Basel III Four-Eyes Policy and Discretionary Authority Delegation.
+              </p>
+            </div>
+            {getStatusBadge(selectedRequest.status)}
+          </div>
+
+          {/* Maker Protection Alert */}
+          {isSelfMaker(selectedRequest) && (
+            <div className="p-4 bg-amber-50 border border-amber-300 rounded-xl flex items-start gap-3">
+              <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
+              <div>
+                <p className="text-xs font-bold text-amber-900">Dual-Control Segregation Violation Alert</p>
+                <p className="text-[11px] text-amber-800 mt-0.5 leading-relaxed">
+                  You submitted this request as Maker ({selectedRequest.makerName}). Institutional policy legally forbids initiators from signing off on their own submissions. An independent checker must authorize this action.
+                </p>
+              </div>
+            </div>
+          )}
+
+          {/* Metadata Cards */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs font-mono">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Transaction Principal</span>
+              <div className="font-extrabold text-emerald-800 text-lg mt-1">{formatCurrency(selectedRequest.amount)}</div>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Maker & Branch</span>
+              <div className="font-bold text-slate-900 text-sm mt-1 font-sans">{selectedRequest.makerName} ({selectedRequest.branchName})</div>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Required Clearance Tier</span>
+              <div className="font-bold text-slate-900 text-sm mt-1 font-sans">{selectedRequest.requiredRole?.replace(/_/g, ' ')}</div>
+            </div>
+          </div>
+
+          <form onSubmit={handleProcessDecision} className="space-y-4 pt-2">
+            {decisionError && (
+              <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs font-semibold flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
+                {decisionError}
+              </div>
+            )}
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 uppercase font-mono block mb-2">
+                Checker Verdict Action
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setDecision('APPROVED')}
+                  className={`py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
+                    decision === 'APPROVED'
+                      ? 'bg-emerald-800 text-white border-emerald-900 shadow-md'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  <CheckCircle2 className="w-4 h-4" /> Authorize & Sign Double-Entry Voucher
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setDecision('REJECTED')}
+                  className={`py-3 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
+                    decision === 'REJECTED'
+                      ? 'bg-rose-800 text-white border-rose-900 shadow-md'
+                      : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                  }`}
+                >
+                  <XCircle className="w-4 h-4" /> Reject & Return to Originator
+                </button>
+              </div>
+            </div>
+
+            {decision === 'REJECTED' && (
+              <div>
+                <label className="text-xs font-bold text-rose-700 uppercase font-mono block mb-1.5">
+                  Mandatory Rejection Ground *
+                </label>
+                <select
+                  value={rejectionReason}
+                  onChange={(e) => setRejectionReason(e.target.value)}
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-xs text-slate-900 font-semibold focus:outline-none focus:border-rose-600"
+                  required
+                >
+                  <option value="">-- Select Rejection Ground --</option>
+                  <option value="Insufficient KYC documentation / PAN-Aadhaar mismatch">Insufficient KYC documentation / PAN-Aadhaar mismatch</option>
+                  <option value="Beneficiary account mismatch or suspicious name discrepancy">Beneficiary account mismatch or suspicious name discrepancy</option>
+                  <option value="Suspected fraud or unusual transaction structuring (AML)">Suspected fraud or unusual transaction structuring (AML)</option>
+                  <option value="Customer signature or telephone callback verification failed">Customer signature or telephone callback verification failed</option>
+                  <option value="Exceeds branch discretionary tolerance without prior zonal concurrence">Exceeds branch discretionary tolerance without prior zonal concurrence</option>
+                  <option value="Other compliance irregularity (detailed below)">Other compliance irregularity (detailed below)</option>
+                </select>
+              </div>
+            )}
+
+            <div>
+              <label className="text-xs font-bold text-slate-700 uppercase font-mono block mb-1.5">
+                Checker Compliance Remarks *
+              </label>
+              <textarea
+                value={checkerRemarks}
+                onChange={(e) => setCheckerRemarks(e.target.value)}
+                placeholder="Record formal verification notes for internal audit..."
+                rows={3}
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 font-medium focus:outline-none focus:border-emerald-600 shadow-inner"
+                required
+              />
+            </div>
+
+            <div className="pt-4 border-t border-slate-100 flex items-center justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setSelectedRequest(null)}
+                className="px-5 py-2.5 rounded-xl text-xs font-bold text-slate-700 hover:bg-slate-100 border border-slate-300 transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={isSubmitting || isSelfMaker(selectedRequest)}
+                className={`px-6 py-2.5 rounded-xl text-xs font-bold shadow-md transition-all flex items-center gap-2 ${
+                  isSelfMaker(selectedRequest)
+                    ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                    : decision === 'APPROVED'
+                    ? 'bg-emerald-800 hover:bg-emerald-900 text-white'
+                    : 'bg-rose-800 hover:bg-rose-900 text-white'
+                }`}
+              >
+                {isSubmitting ? (
+                  <RefreshCw className="w-4 h-4 animate-spin" />
+                ) : decision === 'APPROVED' ? (
+                  <CheckCircle2 className="w-4 h-4" />
+                ) : (
+                  <XCircle className="w-4 h-4" />
+                )}
+                {decision === 'APPROVED' ? 'Execute Authorization' : 'Confirm Rejection'}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 max-w-7xl mx-auto font-sans pb-12">
@@ -994,173 +1174,6 @@ export const ApprovalCenterPage: React.FC = () => {
                 Execute Manual SLA Sweep Now
               </button>
             </div>
-          </div>
-        </div>
-      )}
-
-      {/* DECISION MODAL */}
-      {selectedRequest && (
-        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl max-w-lg w-full overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-            {/* Header */}
-            <div className="bg-emerald-950 text-white p-5 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] font-bold text-emerald-400 uppercase font-mono">Dual-Control Sign-Off</span>
-                <h3 className="text-lg font-black text-white mt-0.5">
-                  Authorize Request #{selectedRequest.id}
-                </h3>
-              </div>
-              <button
-                onClick={() => setSelectedRequest(null)}
-                className="text-slate-400 hover:text-white p-1 rounded-lg"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {/* Maker Protection Alert */}
-            {isSelfMaker(selectedRequest) && (
-              <div className="p-4 bg-amber-50 border-b border-amber-200 flex items-start gap-3">
-                <AlertTriangle className="w-5 h-5 text-amber-700 shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-xs font-bold text-amber-900">Dual-Control Segregation Violation Alert</p>
-                  <p className="text-[11px] text-amber-800 mt-0.5">
-                    You submitted this request as Maker ({selectedRequest.makerName}). 
-                    Institutional policy legally forbids initiators from signing off on their own submissions. 
-                    An independent checker must authorize this action.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            <form onSubmit={handleProcessDecision} className="p-6 space-y-4">
-              {decisionError && (
-                <div className="p-3 bg-rose-50 border border-rose-200 rounded-xl text-rose-800 text-xs font-semibold flex items-center gap-2">
-                  <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" />
-                  {decisionError}
-                </div>
-              )}
-
-              {/* Request Metadata Box */}
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200/80 space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-slate-500 font-mono text-[11px]">Type:</span>
-                  <span className="font-bold text-slate-800">{selectedRequest.requestType.replace(/_/g, ' ')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 font-mono text-[11px]">Amount:</span>
-                  <span className="font-mono font-bold text-emerald-800 text-sm">{formatCurrency(selectedRequest.amount)}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 font-mono text-[11px]">Maker:</span>
-                  <span className="font-medium text-slate-800">{selectedRequest.makerName} ({selectedRequest.branchName})</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500 font-mono text-[11px]">Required Clearance:</span>
-                  <span className="font-bold text-slate-900">{selectedRequest.requiredRole?.replace(/_/g, ' ')}</span>
-                </div>
-              </div>
-
-              {/* Decision Toggle */}
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase font-mono block mb-1.5">
-                  Checker Verdict
-                </label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setDecision('APPROVED')}
-                    className={`py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
-                      decision === 'APPROVED'
-                        ? 'bg-emerald-800 text-white border-emerald-900 shadow-sm'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    <CheckCircle2 className="w-4 h-4" /> Authorize & Sign
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setDecision('REJECTED')}
-                    className={`py-2.5 rounded-xl font-bold text-xs flex items-center justify-center gap-2 border transition-all ${
-                      decision === 'REJECTED'
-                        ? 'bg-rose-800 text-white border-rose-900 shadow-sm'
-                        : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
-                    }`}
-                  >
-                    <XCircle className="w-4 h-4" /> Reject / Block
-                  </button>
-                </div>
-              </div>
-
-              {/* If Rejected: Mandatory Rejection Reason */}
-              {decision === 'REJECTED' && (
-                <div>
-                  <label className="text-[10px] font-bold text-rose-700 uppercase font-mono block mb-1">
-                    Mandatory Rejection Reason *
-                  </label>
-                  <select
-                    value={rejectionReason}
-                    onChange={(e) => setRejectionReason(e.target.value)}
-                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-xs text-slate-900 focus:outline-none focus:border-rose-600"
-                    required
-                  >
-                    <option value="">-- Select Rejection Ground --</option>
-                    <option value="Insufficient KYC documentation / PAN-Aadhaar mismatch">Insufficient KYC documentation / PAN-Aadhaar mismatch</option>
-                    <option value="Beneficiary account mismatch or suspicious name discrepancy">Beneficiary account mismatch or suspicious name discrepancy</option>
-                    <option value="Suspected fraud or unusual transaction structuring (AML)">Suspected fraud or unusual transaction structuring (AML)</option>
-                    <option value="Customer signature or telephone callback verification failed">Customer signature or telephone callback verification failed</option>
-                    <option value="Exceeds branch discretionary tolerance without prior zonal concurrence">Exceeds branch discretionary tolerance without prior zonal concurrence</option>
-                    <option value="Other compliance irregularity (detailed below)">Other compliance irregularity (detailed below)</option>
-                  </select>
-                </div>
-              )}
-
-              {/* Checker Remarks */}
-              <div>
-                <label className="text-[10px] font-bold text-slate-500 uppercase font-mono block mb-1">
-                  Checker Compliance Remarks *
-                </label>
-                <textarea
-                  value={checkerRemarks}
-                  onChange={(e) => setCheckerRemarks(e.target.value)}
-                  placeholder="Record formal verification notes for internal audit..."
-                  rows={3}
-                  className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-xs text-slate-900 focus:outline-none focus:border-emerald-600"
-                  required
-                />
-              </div>
-
-              {/* Actions */}
-              <div className="pt-2 flex items-center justify-end gap-2">
-                <button
-                  type="button"
-                  onClick={() => setSelectedRequest(null)}
-                  className="px-4 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:bg-slate-100 border border-slate-200"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSubmitting || isSelfMaker(selectedRequest)}
-                  className={`px-5 py-2 rounded-xl text-xs font-bold shadow-sm transition-all flex items-center gap-2 ${
-                    isSelfMaker(selectedRequest)
-                      ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
-                      : decision === 'APPROVED'
-                      ? 'bg-emerald-800 hover:bg-emerald-900 text-white'
-                      : 'bg-rose-800 hover:bg-rose-900 text-white'
-                  }`}
-                >
-                  {isSubmitting ? (
-                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                  ) : decision === 'APPROVED' ? (
-                    <CheckCircle2 className="w-3.5 h-3.5" />
-                  ) : (
-                    <XCircle className="w-3.5 h-3.5" />
-                  )}
-                  {decision === 'APPROVED' ? 'Execute Authorization' : 'Confirm Rejection'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       )}

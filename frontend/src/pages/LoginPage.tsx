@@ -13,20 +13,22 @@ import {
   Landmark, 
   Award,
   CheckCircle2,
-  Cpu
+  Cpu,
+  Sparkles,
+  KeyRound
 } from 'lucide-react';
 
 export const LoginPage: React.FC = () => {
   const { login } = useAuth();
   const navigate = useNavigate();
 
-  const [username, setUsername] = useState('ho_admin');
-  const [password, setPassword] = useState('Password@123');
+  const [username, setUsername] = useState('admin');
+  const [password, setPassword] = useState('admin123');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState<boolean>(false);
 
-  // Requirement: Pre-warm backend connection immediately on mount
+  // Pre-warm backend connection immediately on mount
   useEffect(() => {
     let isMounted = true;
     const warmUp = async () => {
@@ -37,7 +39,7 @@ export const LoginPage: React.FC = () => {
         try {
           await api.get('/auth/me', { timeout: 4000 });
         } catch {
-          // container is waking up
+          // container waking up
         }
         if (isMounted) setBackendReady(true);
       }
@@ -75,111 +77,125 @@ export const LoginPage: React.FC = () => {
     }
   };
 
+  const setDemoRole = (user: string, pass: string) => {
+    setUsername(user);
+    setPassword(pass);
+    setError(null);
+  };
+
   return (
-    <div className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 lg:p-10 overflow-hidden font-sans">
-      {/* Luxurious Bank Architectural Background */}
+    <div className="min-h-screen relative flex items-center justify-center p-4 sm:p-6 lg:p-10 overflow-hidden font-sans bg-[#041a15]">
+      {/* Luxurious Bank Architectural Background with High-Contrast Darkening */}
       <div 
         className="absolute inset-0 bg-cover bg-center scale-105 transition-transform duration-1000"
-        style={{ backgroundImage: `url('/assets/luxury-bank-bg.jpg')` }}
+        style={{ 
+          backgroundImage: `url('/assets/luxury-bank-bg.jpg')`,
+          filter: 'brightness(0.28) contrast(1.15) saturate(0.85)'
+        }}
       />
 
-      {/* Swiss Emerald & Obsidian Dark Tint Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#06231D]/92 via-[#09382E]/85 to-[#06231D]/92 backdrop-blur-[2px]" />
+      {/* Solid Swiss Emerald & Obsidian Dark Vignette Overlay */}
+      <div 
+        className="absolute inset-0 backdrop-blur-[2px]"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(6, 35, 29, 0.88) 0%, rgba(3, 20, 16, 0.96) 80%, rgba(1, 10, 8, 0.99) 100%)'
+        }}
+      />
 
-      {/* Subtle Mint/Emerald Radial Glow */}
-      <div className="absolute w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none top-1/2 left-1/4 -translate-y-1/2" />
+      {/* Subtle Mint/Emerald Ambient Glow */}
+      <div className="absolute w-[700px] h-[700px] bg-emerald-500/10 rounded-full blur-[140px] pointer-events-none top-1/2 left-1/4 -translate-y-1/2" />
 
       {/* Main Container */}
       <div className="w-full max-w-5xl relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
         
-        {/* Left Column: Bank Institutional Grandeur & Security Credentials */}
-        <div className="lg:col-span-7 text-white space-y-7 pr-0 lg:pr-6">
+        {/* Left Column: Bank Institutional Grandeur & Security Credentials inside Protected Glassmorphic Card */}
+        <div className="lg:col-span-7 bg-[#06231D]/88 border border-emerald-500/35 rounded-3xl p-7 sm:p-9 backdrop-blur-xl shadow-2xl text-white space-y-6">
           
           {/* Bank Crest & Brand Header */}
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-slate-950 to-black p-2 border border-emerald-400/40 shadow-2xl flex items-center justify-center backdrop-blur-md">
-              <BankLogo size={46} className="filter drop-shadow-[0_2px_8px_rgba(16,185,129,0.5)]" />
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/25 via-slate-950 to-black p-2 border border-emerald-400/50 shadow-2xl flex items-center justify-center backdrop-blur-md shrink-0">
+              <BankLogo size={46} className="filter drop-shadow-[0_2px_8px_rgba(16,185,129,0.6)]" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-mono font-bold tracking-widest text-emerald-400 uppercase">
+                <span className="text-[11px] font-mono font-bold tracking-widest text-emerald-300 uppercase">
                   Est. 1928 • Swiss Private Banking Tier
                 </span>
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
+              <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white drop-shadow-md">
                 Apex National Bank
               </h1>
-              <p className="text-xs tracking-wider uppercase text-slate-300 font-medium mt-0.5">
+              <p className="text-xs tracking-wider uppercase text-emerald-200/90 font-medium mt-0.5">
                 Central Head Office & Private Wealth Management Group
               </p>
             </div>
           </div>
 
           {/* Core Regulatory Certification Card */}
-          <div className="bg-[#0B382D]/70 border border-emerald-500/30 rounded-2xl p-6 backdrop-blur-md shadow-2xl relative overflow-hidden">
+          <div className="bg-emerald-950/70 border border-emerald-500/40 rounded-2xl p-5 backdrop-blur-md shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
             
-            <div className="flex items-center space-x-2.5 text-emerald-300 text-xs font-bold font-mono tracking-wide mb-2.5">
+            <div className="flex items-center space-x-2 text-emerald-300 text-xs font-bold font-mono tracking-wide mb-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
               <span>CENTRAL MONETARY & SWISS WEALTH PROTOCOLS</span>
             </div>
             
-            <p className="text-xs text-slate-200 leading-relaxed font-light">
+            <p className="text-xs text-slate-100 leading-relaxed font-normal">
               Apex National Bank Core Terminal governs multi-branch liquidity clearance, real-time RTGS/NEFT settlement corridors, immutable double-entry general ledgers, and maker-checker capital authorization across all national zones.
             </p>
 
-            <div className="mt-4 pt-4 border-t border-emerald-900/60 grid grid-cols-3 gap-3 text-center">
-              <div className="bg-black/40 rounded-xl p-2.5 border border-emerald-900/60">
+            <div className="mt-4 pt-4 border-t border-emerald-900/80 grid grid-cols-3 gap-3 text-center">
+              <div className="bg-black/50 rounded-xl p-2.5 border border-emerald-800/60 shadow-inner">
                 <div className="text-base font-extrabold text-emerald-300">24.8%</div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-tight">Capital Adequacy</div>
+                <div className="text-[10px] text-slate-300 uppercase tracking-tight">Capital Adequacy</div>
               </div>
-              <div className="bg-black/40 rounded-xl p-2.5 border border-emerald-900/60">
+              <div className="bg-black/50 rounded-xl p-2.5 border border-emerald-800/60 shadow-inner">
                 <div className="text-base font-extrabold text-emerald-400">100%</div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-tight">Basel III Solvency</div>
+                <div className="text-[10px] text-slate-300 uppercase tracking-tight">Basel III Solvency</div>
               </div>
-              <div className="bg-black/40 rounded-xl p-2.5 border border-emerald-900/60">
+              <div className="bg-black/50 rounded-xl p-2.5 border border-emerald-800/60 shadow-inner">
                 <div className="text-base font-extrabold text-emerald-300">256-Bit</div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-tight">HSM Encryption</div>
+                <div className="text-[10px] text-slate-300 uppercase tracking-tight">HSM Encryption</div>
               </div>
             </div>
           </div>
 
           {/* Institutional Trust Badges */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3 text-xs text-slate-300">
-              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                <Landmark className="w-4 h-4 text-emerald-400" />
+          <div className="space-y-3 pt-1">
+            <div className="flex items-center space-x-3 text-xs text-slate-100">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0">
+                <Landmark className="w-4 h-4 text-emerald-300" />
               </div>
-              <span>Centralized Head Office oversight across Southern, Western & Northern zonal commands</span>
+              <span className="font-medium">Centralized Head Office oversight across Southern, Western & Northern zonal commands</span>
             </div>
 
-            <div className="flex items-center space-x-3 text-xs text-slate-300">
-              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
-                <Award className="w-4 h-4 text-emerald-400" />
+            <div className="flex items-center space-x-3 text-xs text-slate-100">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center shrink-0">
+                <Award className="w-4 h-4 text-emerald-300" />
               </div>
-              <span>Dual-authorization segregation of duties for high-value advances & vault operations</span>
+              <span className="font-medium">Dual-authorization segregation of duties for high-value advances & vault operations</span>
             </div>
           </div>
 
           {/* Connection Speed Status */}
-          <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-400 pt-1">
+          <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-300 pt-2 border-t border-emerald-900/60">
             <Cpu className="w-3.5 h-3.5 text-emerald-400" />
             <span>Core Gateway:</span>
-            <span className="flex items-center space-x-1.5 text-emerald-400 font-semibold">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
+            <span className="flex items-center space-x-1.5 text-emerald-300 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse inline-block" />
               <span>{backendReady ? 'Live & Synchronized (0ms latency)' : 'Connecting to Core Cloud Cluster...'}</span>
             </span>
           </div>
         </div>
 
         {/* Right Column: Security Authentication Terminal */}
-        <div className="lg:col-span-5 bg-white rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border border-emerald-200/50 p-8 sm:p-10 relative">
+        <div className="lg:col-span-5 bg-white rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.85)] border border-emerald-200/80 p-8 sm:p-10 relative">
           
           {/* Top Emerald Accent Bar */}
           <div className="absolute top-0 left-8 right-8 h-1.5 bg-gradient-to-r from-emerald-700 via-emerald-500 to-emerald-700 rounded-b" />
 
-          <div className="pb-5 mb-6 border-b border-slate-100">
+          <div className="pb-4 mb-5 border-b border-slate-100">
             <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-700">
               Authorized Personnel Only
             </span>
@@ -191,6 +207,44 @@ export const LoginPage: React.FC = () => {
             </p>
           </div>
 
+          {/* Quick Demo Role Selectors */}
+          <div className="mb-5 bg-slate-50 border border-slate-200/80 rounded-xl p-2.5">
+            <div className="text-[10px] font-mono font-bold uppercase tracking-wider text-slate-500 mb-1.5 flex items-center gap-1.5">
+              <KeyRound className="w-3 h-3 text-emerald-600" />
+              <span>Instant Demo Fill:</span>
+            </div>
+            <div className="grid grid-cols-2 gap-1.5">
+              <button
+                type="button"
+                onClick={() => setDemoRole('admin', 'admin123')}
+                className="px-2 py-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-800 rounded-lg text-left transition shadow-xs"
+              >
+                👑 Head Office Admin
+              </button>
+              <button
+                type="button"
+                onClick={() => setDemoRole('manager.mumbai', 'manager123')}
+                className="px-2 py-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-800 rounded-lg text-left transition shadow-xs"
+              >
+                🏢 Branch Manager
+              </button>
+              <button
+                type="button"
+                onClick={() => setDemoRole('cashier.mumbai', 'cashier123')}
+                className="px-2 py-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-800 rounded-lg text-left transition shadow-xs"
+              >
+                💵 Teller / Cashier
+              </button>
+              <button
+                type="button"
+                onClick={() => setDemoRole('customer', 'customer123')}
+                className="px-2 py-1 text-[11px] font-semibold text-slate-700 bg-white border border-slate-200 hover:border-emerald-500 hover:text-emerald-800 rounded-lg text-left transition shadow-xs"
+              >
+                👤 Retail Customer
+              </button>
+            </div>
+          </div>
+
           {error && (
             <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start space-x-2.5 text-xs text-rose-800">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
@@ -198,9 +252,9 @@ export const LoginPage: React.FC = () => {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 font-mono">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 font-mono">
                 Username / Officer ID
               </label>
               <div className="relative">
@@ -210,14 +264,14 @@ export const LoginPage: React.FC = () => {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 font-mono transition bg-slate-50/50"
-                  placeholder="e.g. ho_admin"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 font-mono transition bg-slate-50 shadow-inner font-medium"
+                  placeholder="e.g. admin"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 font-mono">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5 font-mono">
                 Security Password
               </label>
               <div className="relative">
@@ -227,7 +281,7 @@ export const LoginPage: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 font-mono transition bg-slate-50/50"
+                  className="w-full pl-10 pr-3.5 py-2.5 rounded-xl border border-slate-300 text-sm text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 font-mono transition bg-slate-50 shadow-inner font-medium"
                   placeholder="••••••••••••"
                 />
               </div>
@@ -254,7 +308,7 @@ export const LoginPage: React.FC = () => {
             </div>
           </form>
 
-          <div className="mt-8 pt-5 border-t border-slate-100 flex items-center justify-center space-x-2 text-[10px] text-slate-400">
+          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center space-x-2 text-[10px] text-slate-400">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
             <span>Apex HSM Hardware Security Module Protected • Audit Logged</span>
           </div>

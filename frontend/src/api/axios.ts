@@ -1,4 +1,5 @@
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
+import { cacheService } from './cache';
 
 const API_BASE_URL = (import.meta as any).env?.VITE_API_URL || '/api/v1';
 
@@ -21,7 +22,17 @@ api.interceptors.request.use(
 );
 
 api.interceptors.response.use(
-  (response) => response,
+  (response: AxiosResponse) => {
+    // Cache successful GET responses in client-side memory
+    if (response.config.method?.toLowerCase() === 'get' && response.data?.success) {
+      cacheService.set(response.config.url || '', response.data);
+    }
+    // Automatically invalidate cache on state mutations (POST, PUT, DELETE, PATCH)
+    if (['post', 'put', 'delete', 'patch'].includes(response.config.method?.toLowerCase() || '')) {
+      cacheService.invalidate();
+    }
+    return response;
+  },
   async (error) => {
     const originalRequest = error.config;
     if (error.response?.status === 401 && !originalRequest._retry) {
@@ -48,5 +59,28 @@ api.interceptors.response.use(
     return Promise.reject(error);
   }
 );
+
+// High-speed cached GET request for instant navigation (< 1s)
+export const cachedGet = async <T = any>(url: string, bypassCache: boolean = false, ttlMs?: number): Promise<T> => {
+  if (!bypassCache) {
+    const cached = cacheService.get<T>(url);
+    if (cached !== null) {
+      // Fire-and-forget background revalidation
+      api.get(url).then((res) => {
+        const payload = (res.data && typeof res.data === 'object' && 'data' in res.data && res.data.data !== undefined)
+          ? res.data.data
+          : res.data;
+        cacheService.set(url, payload, ttlMs);
+      }).catch(() => {});
+      return cached;
+    }
+  }
+  const res = await api.get(url);
+  const payload = (res.data && typeof res.data === 'object' && 'data' in res.data && res.data.data !== undefined)
+    ? res.data.data
+    : res.data;
+  cacheService.set(url, payload, ttlMs);
+  return payload as T;
+};
 
 export default api;

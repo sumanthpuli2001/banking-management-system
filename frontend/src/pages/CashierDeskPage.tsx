@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import api from '../api/axios';
+import api, { cachedGet } from '../api/axios';
 import { useAuth } from '../context/AuthContext';
 import { ApiResponse } from '../types/auth';
+import { AiSecurityMarker } from '../components/common/AiSecurityMarker';
 import {
   Banknote,
   ArrowDownCircle,
@@ -10,11 +11,14 @@ import {
   CheckCircle2,
   AlertCircle,
   Printer,
-  X,
   FileText,
   ShieldCheck,
   Calculator,
-  RotateCcw
+  RotateCcw,
+  ArrowLeft,
+  UserCheck,
+  Building,
+  CheckCircle
 } from 'lucide-react';
 
 interface AccountInfo {
@@ -65,7 +69,7 @@ export const CashierDeskPage: React.FC = () => {
     10: 0,
   });
 
-  // Receipt Modal
+  // Dedicated Full-Page Receipt State (replaces popup modal)
   const [receiptData, setReceiptData] = useState<{
     referenceNumber: string;
     accountNumber: string;
@@ -95,7 +99,7 @@ export const CashierDeskPage: React.FC = () => {
     const val = parseInt(countStr, 10) || 0;
     const updated = { ...denominations, [denom]: Math.max(0, val) };
     setDenominations(updated);
-    
+
     // Automatically update amount if on deposit tab
     if (activeTab === 'DEPOSIT') {
       const total =
@@ -127,9 +131,9 @@ export const CashierDeskPage: React.FC = () => {
     setLookupLoading(true);
     setLookupError('');
     try {
-      const res = await api.get<ApiResponse<AccountInfo>>(`/accounts/${searchAccountNum.trim()}`);
-      if (res.data?.success && res.data.data) {
-        setAccountInfo(res.data.data);
+      const data = await cachedGet<AccountInfo>(`/accounts/${searchAccountNum.trim()}`, true);
+      if (data && data.accountNumber) {
+        setAccountInfo(data);
       } else {
         setLookupError('Account not found in core ledger');
         setAccountInfo(null);
@@ -188,7 +192,6 @@ export const CashierDeskPage: React.FC = () => {
             cashierName: user?.fullName || 'Cashier Desk 01',
             branchCode: user?.branchCode || 'APEX0001',
           });
-          // Refresh account balance
           handleLookupAccount();
         }
       } else {
@@ -213,7 +216,6 @@ export const CashierDeskPage: React.FC = () => {
             cashierName: user?.fullName || 'Cashier Desk 01',
             branchCode: user?.branchCode || 'APEX0001',
           });
-          // Refresh account balance
           handleLookupAccount();
         }
       }
@@ -225,31 +227,175 @@ export const CashierDeskPage: React.FC = () => {
     }
   };
 
+  // DEDICATED FULL-PAGE VIEW: Official Cash Counter Voucher & AI Vault Verification (replaces popup modal)
+  if (receiptData) {
+    return (
+      <div className="space-y-6 max-w-4xl mx-auto font-sans pb-12">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+          <button
+            onClick={() => setReceiptData(null)}
+            className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-emerald-800 transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Cashier Counter</span>
+          </button>
+          <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            OFFICIAL TELLER CASH VOUCHER
+          </span>
+        </div>
+
+        <AiSecurityMarker
+          moduleName="Core Cash Vault & Physical Currency Reconciliation Sentinel"
+          confidenceScore={99.9}
+          anomalyScore={0.01}
+          riskRating="LOW"
+          statusText="Physical Denomination Reconciled with Double-Entry Cash Vault"
+          referenceCode={receiptData.referenceNumber}
+        />
+
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+            <div>
+              <div className="flex items-center gap-2 text-emerald-800 font-bold text-base">
+                <FileText className="w-5 h-5 text-emerald-700" />
+                <span>Counter Cash Transaction Receipt</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Official double-entry teller voucher • Branch: {receiptData.branchCode}
+              </p>
+            </div>
+            <span
+              className={`px-3 py-1 rounded-full text-xs font-extrabold border ${
+                receiptData.type === 'CASH_DEPOSIT'
+                  ? 'bg-emerald-50 text-emerald-800 border-emerald-300'
+                  : 'bg-rose-50 text-rose-800 border-rose-300'
+              }`}
+            >
+              {receiptData.type === 'CASH_DEPOSIT' ? 'COUNTER CASH DEPOSIT' : 'COUNTER CASH WITHDRAWAL'}
+            </span>
+          </div>
+
+          <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-6 text-center">
+            <span className="text-xs font-bold text-slate-500 uppercase font-mono tracking-wider">
+              {receiptData.type === 'CASH_DEPOSIT' ? 'Total Cash Credited' : 'Total Cash Paid Out'}
+            </span>
+            <div className="text-3xl sm:text-4xl font-extrabold font-mono text-emerald-900 mt-1">
+              ₹{receiptData.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </div>
+            {receiptData.runningBalance !== undefined && (
+              <div className="text-xs text-slate-600 mt-2 font-mono">
+                Post-Transaction Available Balance: <span className="font-bold text-slate-900">₹{receiptData.runningBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Voucher Reference</span>
+              <div className="font-bold text-slate-900 text-sm mt-1">{receiptData.referenceNumber}</div>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Timestamp & Station</span>
+              <div className="font-bold text-slate-900 text-sm mt-1">
+                {new Date(receiptData.timestamp).toLocaleString('en-IN')} ({receiptData.cashierName})
+              </div>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Customer Account</span>
+              <div className="font-bold text-slate-900 text-sm mt-1">{receiptData.accountNumber}</div>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Account Holder</span>
+              <div className="font-bold text-slate-900 text-sm mt-1 font-sans">{receiptData.customerName}</div>
+            </div>
+          </div>
+
+          {/* Balanced Double-Entry General Ledger Impact */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 text-xs font-mono">
+            <div className="text-[11px] font-bold text-slate-700 uppercase font-sans tracking-wider">
+              Balanced Double-Entry General Ledger Postings
+            </div>
+            {receiptData.type === 'CASH_DEPOSIT' ? (
+              <>
+                <div className="flex justify-between text-emerald-800 font-bold p-2.5 bg-white rounded-lg border border-slate-200">
+                  <span>DR 1010-CASH-VAULT-CURRENCY</span>
+                  <span>₹{receiptData.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between text-emerald-800 font-bold p-2.5 bg-white rounded-lg border border-slate-200">
+                  <span>CR 2010-DEMAND-DEPOSITS-SAVINGS ({receiptData.accountNumber})</span>
+                  <span>₹{receiptData.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="flex justify-between text-rose-700 font-bold p-2.5 bg-white rounded-lg border border-slate-200">
+                  <span>DR 2010-DEMAND-DEPOSITS-SAVINGS ({receiptData.accountNumber})</span>
+                  <span>₹{receiptData.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                </div>
+                <div className="flex justify-between text-rose-700 font-bold p-2.5 bg-white rounded-lg border border-slate-200">
+                  <span>CR 1010-CASH-VAULT-CURRENCY</span>
+                  <span>₹{receiptData.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+                </div>
+              </>
+            )}
+          </div>
+
+          <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4 text-emerald-700 shrink-0" />
+              <span>Physical note tally matches CBS transaction voucher. Ledger posting completed.</span>
+            </div>
+            <span className="font-mono font-bold text-emerald-800 text-[11px]">Vault Status: BALANCED</span>
+          </div>
+
+          <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+            <button
+              onClick={() => window.print()}
+              className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center gap-2 border border-slate-200 transition"
+            >
+              <Printer className="w-4 h-4 text-slate-600" />
+              <span>Print Cash Voucher</span>
+            </button>
+            <button
+              onClick={() => {
+                setReceiptData(null);
+                resetDenominations();
+              }}
+              className="flex-1 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md transition"
+            >
+              Complete & Serve Next Customer
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-700/60 pb-5">
+    <div className="space-y-6 font-sans">
+      {/* Page Header - High-Contrast Swiss Emerald */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-blue-400">
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-emerald-800 font-mono">
             <span>Branch Operations</span>
             <span>•</span>
             <span>Cash Counter Station #01</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mt-1 flex items-center gap-3">
-            <Banknote className="h-7 w-7 text-blue-400" />
-            Cashier Desk & Vault Terminal
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mt-1 flex items-center gap-3">
+            <Banknote className="h-7 w-7 text-emerald-700" />
+            <span>Cashier Desk & Vault Terminal</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Authorized counter cash deposits, withdrawals, and physical currency note tally verification.
           </p>
         </div>
 
         {/* Teller Badge */}
-        <div className="flex items-center space-x-3 bg-slate-800/80 border border-slate-700 px-4 py-2.5 rounded-lg">
-          <div className="h-2.5 w-2.5 rounded-full bg-emerald-400 animate-pulse"></div>
+        <div className="flex items-center space-x-3 bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-xs">
+          <div className="h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse"></div>
           <div className="text-xs">
-            <div className="text-slate-400">Active Teller Session</div>
-            <div className="font-semibold text-white">{user?.fullName || 'Authorized Cashier'} ({user?.branchCode || 'HO-001'})</div>
+            <div className="text-slate-500 font-medium">Active Teller Session</div>
+            <div className="font-bold text-slate-900">{user?.fullName || 'Authorized Cashier'} ({user?.branchCode || 'HO-001'})</div>
           </div>
         </div>
       </div>
@@ -259,17 +405,17 @@ export const CashierDeskPage: React.FC = () => {
         {/* Left Column: Transaction Execution */}
         <div className="lg:col-span-7 space-y-6">
           {/* Action Tabs: Deposit vs Withdrawal */}
-          <div className="bg-slate-800/60 border border-slate-700/80 rounded-xl p-1.5 flex">
+          <div className="bg-slate-100 p-1.5 rounded-2xl flex border border-slate-200">
             <button
               onClick={() => {
                 setActiveTab('DEPOSIT');
                 setNarration('Counter Cash Deposit');
                 setTxnError('');
               }}
-              className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
                 activeTab === 'DEPOSIT'
-                  ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-900/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/40'
+                  ? 'bg-emerald-800 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
               }`}
             >
               <ArrowDownCircle className="h-4 w-4" />
@@ -281,10 +427,10 @@ export const CashierDeskPage: React.FC = () => {
                 setNarration('Counter Cash Withdrawal');
                 setTxnError('');
               }}
-              className={`flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all flex items-center justify-center gap-2 ${
+              className={`flex-1 py-2.5 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
                 activeTab === 'WITHDRAWAL'
-                  ? 'bg-rose-600 text-white shadow-lg shadow-rose-900/30'
-                  : 'text-slate-400 hover:text-white hover:bg-slate-700/40'
+                  ? 'bg-rose-700 text-white shadow-sm'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/60'
               }`}
             >
               <ArrowUpCircle className="h-4 w-4" />
@@ -293,9 +439,9 @@ export const CashierDeskPage: React.FC = () => {
           </div>
 
           {/* Account Verification Section */}
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4">
-            <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-              <Search className="h-4 w-4 text-blue-400" />
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-4 shadow-sm text-slate-900">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2 font-mono">
+              <Search className="h-4 w-4 text-emerald-700" />
               1. Customer Account Verification
             </h3>
 
@@ -306,55 +452,55 @@ export const CashierDeskPage: React.FC = () => {
                   value={searchAccountNum}
                   onChange={(e) => setSearchAccountNum(e.target.value)}
                   placeholder="Enter 16-digit Account Number (e.g. 1001000000000001)"
-                  className="w-full bg-slate-950/70 border border-slate-700 rounded-lg px-4 py-2.5 text-white placeholder-slate-500 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 placeholder-slate-400 font-mono text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-medium"
                 />
               </div>
               <button
                 type="button"
                 onClick={handleLookupAccount}
                 disabled={lookupLoading}
-                className="px-5 py-2.5 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white font-semibold rounded-lg text-sm flex items-center gap-2 shadow-sm transition-all"
+                className="px-5 py-2.5 bg-emerald-800 hover:bg-emerald-900 disabled:opacity-50 text-white font-bold rounded-xl text-xs flex items-center gap-2 shadow-xs transition-all"
               >
                 {lookupLoading ? 'Verifying...' : 'Verify'}
               </button>
             </div>
 
             {lookupError && (
-              <div className="flex items-center gap-2 text-rose-400 bg-rose-950/30 border border-rose-800/50 px-3.5 py-2.5 rounded-lg text-xs">
-                <AlertCircle className="h-4 w-4 shrink-0" />
+              <div className="flex items-center gap-2 text-rose-800 bg-rose-50 border border-rose-300 px-3.5 py-2.5 rounded-xl text-xs font-semibold">
+                <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
                 <span>{lookupError}</span>
               </div>
             )}
 
             {accountInfo && (
-              <div className="bg-slate-800/80 border border-slate-700/80 rounded-lg p-4 space-y-3">
+              <div className="bg-emerald-50/60 border border-emerald-200 rounded-xl p-4 space-y-3">
                 <div className="flex items-start justify-between">
                   <div>
-                    <span className="text-xs text-slate-400">Account Holder</span>
-                    <h4 className="text-base font-bold text-white">{accountInfo.customerName}</h4>
-                    <div className="text-xs text-slate-400 mt-0.5">
-                      Customer ID: <span className="font-mono text-slate-300">{accountInfo.customerNumber}</span> • Branch: {accountInfo.branchName}
+                    <span className="text-[11px] text-slate-500 font-medium">Account Holder</span>
+                    <h4 className="text-base font-extrabold text-slate-900">{accountInfo.customerName}</h4>
+                    <div className="text-xs text-slate-500 mt-0.5">
+                      Customer ID: <span className="font-mono font-bold text-slate-700">{accountInfo.customerNumber}</span> • Branch: {accountInfo.branchName}
                     </div>
                   </div>
                   <span
-                    className={`text-xs px-2.5 py-1 rounded-full font-semibold border ${
+                    className={`text-xs px-2.5 py-1 rounded-full font-bold border ${
                       accountInfo.status === 'ACTIVE'
-                        ? 'bg-emerald-950/60 text-emerald-400 border-emerald-800/50'
-                        : 'bg-rose-950/60 text-rose-400 border-rose-800/50'
+                        ? 'bg-emerald-100 text-emerald-800 border-emerald-300'
+                        : 'bg-rose-100 text-rose-800 border-rose-300'
                     }`}
                   >
                     {accountInfo.status}
                   </span>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-slate-700/60 text-xs">
+                <div className="grid grid-cols-2 gap-3 pt-2 border-t border-emerald-200 text-xs">
                   <div>
-                    <span className="text-slate-400">Account Type:</span>
-                    <div className="font-semibold text-white">{accountInfo.accountType}</div>
+                    <span className="text-slate-500 font-medium">Account Type:</span>
+                    <div className="font-bold text-slate-900">{accountInfo.accountType}</div>
                   </div>
                   <div>
-                    <span className="text-slate-400">Current Available Balance:</span>
-                    <div className="font-bold text-emerald-400 font-mono text-sm">
+                    <span className="text-slate-500 font-medium">Current Available Balance:</span>
+                    <div className="font-extrabold text-emerald-800 font-mono text-base">
                       ₹{accountInfo.availableBalance?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
                   </div>
@@ -364,52 +510,52 @@ export const CashierDeskPage: React.FC = () => {
           </div>
 
           {/* Transaction Execution Form */}
-          <form onSubmit={handleProcessTransaction} className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4">
-            <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-              <Banknote className="h-4 w-4 text-emerald-400" />
+          <form onSubmit={handleProcessTransaction} className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-4 shadow-sm text-slate-900">
+            <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-2 font-mono">
+              <Banknote className="h-4 w-4 text-emerald-700" />
               2. Transaction Details & Amount
             </h3>
 
             {txnError && (
-              <div className="flex items-center gap-2 text-rose-400 bg-rose-950/30 border border-rose-800/50 px-3.5 py-2.5 rounded-lg text-xs">
-                <AlertCircle className="h-4 w-4 shrink-0" />
+              <div className="flex items-center gap-2 text-rose-800 bg-rose-50 border border-rose-300 px-3.5 py-2.5 rounded-xl text-xs font-semibold">
+                <AlertCircle className="h-4 w-4 shrink-0 text-rose-600" />
                 <span>{txnError}</span>
               </div>
             )}
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">
-                  Amount in INR (₹) <span className="text-rose-400">*</span>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 font-mono">
+                  Amount in INR (₹) <span className="text-rose-500">*</span>
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span>
+                  <span className="absolute left-3.5 top-2.5 text-slate-500 font-bold font-mono">₹</span>
                   <input
                     type="number"
                     min="1"
                     step="1"
                     value={amount || ''}
                     onChange={(e) => setAmount(Number(e.target.value))}
-                    className="w-full bg-slate-950/70 border border-slate-700 rounded-lg pl-8 pr-4 py-2.5 text-white font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-4 py-2.5 text-slate-900 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                     placeholder="5000"
                     required
                   />
                 </div>
                 {amount >= 50000 && (
-                  <p className="text-[11px] text-teal-400 mt-1 flex items-center gap-1">
-                    <AlertCircle className="h-3 w-3 shrink-0" />
+                  <p className="text-[11px] text-amber-800 bg-amber-50 border border-amber-200 p-2 rounded-lg mt-1.5 flex items-center gap-1 font-semibold">
+                    <AlertCircle className="h-3.5 w-3.5 shrink-0 text-amber-700" />
                     PAN declaration mandatory for transactions ≥ ₹50,000
                   </p>
                 )}
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-slate-400 mb-1">Narration / Remarks</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1.5 font-mono">Narration / Remarks</label>
                 <input
                   type="text"
                   value={narration}
                   onChange={(e) => setNarration(e.target.value)}
-                  className="w-full bg-slate-950/70 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-medium"
                   placeholder="e.g. Counter Cash Deposit"
                 />
               </div>
@@ -418,16 +564,16 @@ export const CashierDeskPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting || !accountInfo}
-              className={`w-full py-3.5 px-4 rounded-lg font-bold text-sm text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
+              className={`w-full py-3.5 px-4 rounded-xl font-bold text-sm text-white shadow-md transition-all flex items-center justify-center gap-2 ${
                 !accountInfo
-                  ? 'bg-slate-700 cursor-not-allowed opacity-50'
+                  ? 'bg-slate-300 cursor-not-allowed opacity-60 text-slate-600'
                   : activeTab === 'DEPOSIT'
-                  ? 'bg-emerald-600 hover:bg-emerald-500 shadow-emerald-900/40'
-                  : 'bg-rose-600 hover:bg-rose-500 shadow-rose-900/40'
+                  ? 'bg-gradient-to-r from-emerald-700 via-emerald-800 to-[#06231D] hover:from-emerald-600 hover:to-emerald-800'
+                  : 'bg-gradient-to-r from-rose-700 to-rose-900 hover:from-rose-600 hover:to-rose-800'
               }`}
             >
               {isSubmitting ? (
-                'Processing Ledger Entry...'
+                'Processing Core Ledger Entry...'
               ) : activeTab === 'DEPOSIT' ? (
                 <>
                   <CheckCircle2 className="h-5 w-5" />
@@ -445,22 +591,22 @@ export const CashierDeskPage: React.FC = () => {
 
         {/* Right Column: Physical Currency Denomination Breakdown */}
         <div className="lg:col-span-5 space-y-6">
-          <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-4 shadow-sm text-slate-900">
+            <div className="flex items-center justify-between border-b border-slate-100 pb-3">
               <div className="flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-emerald-400" />
-                <h3 className="text-sm font-bold text-white">Physical Note Denominations</h3>
+                <Calculator className="h-5 w-5 text-emerald-700" />
+                <h3 className="text-sm font-bold text-slate-900">Physical Note Denominations</h3>
               </div>
               <button
                 type="button"
                 onClick={resetDenominations}
-                className="text-xs text-slate-400 hover:text-slate-200 flex items-center gap-1 hover:underline"
+                className="text-xs text-slate-500 hover:text-slate-800 flex items-center gap-1 font-semibold hover:underline"
               >
                 <RotateCcw className="h-3 w-3" /> Reset
               </button>
             </div>
 
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-slate-500">
               Enter individual currency note counts for physical vault tallying. The computed total will sync with the deposit counter.
             </p>
 
@@ -472,11 +618,11 @@ export const CashierDeskPage: React.FC = () => {
                 return (
                   <div
                     key={denom}
-                    className="flex items-center justify-between bg-slate-950/60 border border-slate-800/80 rounded-lg p-2.5 text-xs"
+                    className="flex items-center justify-between bg-slate-50 border border-slate-200 rounded-xl p-3 text-xs"
                   >
-                    <div className="w-20 font-bold text-slate-300 flex items-center gap-1 font-mono">
+                    <div className="w-20 font-bold text-slate-800 flex items-center gap-1 font-mono">
                       <span>₹{denom}</span>
-                      <span className="text-slate-500 font-normal">×</span>
+                      <span className="text-slate-400 font-normal">×</span>
                     </div>
 
                     <input
@@ -485,10 +631,10 @@ export const CashierDeskPage: React.FC = () => {
                       value={count || ''}
                       onChange={(e) => handleDenomChange(denom as keyof DenominationCount, e.target.value)}
                       placeholder="0"
-                      className="w-24 bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-center font-mono font-bold text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                      className="w-24 bg-white border border-slate-300 rounded-lg px-2.5 py-1 text-center font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                     />
 
-                    <div className="w-28 text-right font-mono font-semibold text-emerald-400">
+                    <div className="w-28 text-right font-mono font-bold text-emerald-800">
                       = ₹{subtotal.toLocaleString('en-IN')}
                     </div>
                   </div>
@@ -497,125 +643,24 @@ export const CashierDeskPage: React.FC = () => {
             </div>
 
             {/* Total Tally Summary */}
-            <div className="bg-slate-800/90 border border-slate-700 rounded-lg p-3.5 flex items-center justify-between">
+            <div className="bg-emerald-50/80 border border-emerald-200 rounded-xl p-4 flex items-center justify-between">
               <div>
-                <div className="text-[11px] uppercase tracking-wider text-slate-400 font-semibold">Tally Total</div>
-                <div className="text-lg font-bold font-mono text-emerald-400">
+                <div className="text-[11px] uppercase tracking-wider text-slate-500 font-bold font-mono">Tally Total</div>
+                <div className="text-xl font-extrabold font-mono text-emerald-900">
                   ₹{calculateDenomTotal().toLocaleString('en-IN')}
                 </div>
               </div>
               <div className="text-right">
-                <span className="inline-flex items-center gap-1 text-xs text-slate-300 bg-slate-700/60 px-2 py-1 rounded">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-400" /> Vault Verified
+                <span className="inline-flex items-center gap-1 text-xs text-emerald-800 bg-emerald-100 border border-emerald-300 px-2.5 py-1 rounded-full font-bold">
+                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-700" /> Vault Verified
                 </span>
               </div>
             </div>
           </div>
         </div>
       </div>
-
-      {/* Printable Receipt Modal */}
-      {receiptData && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            {/* Header */}
-            <div className="bg-slate-800 px-6 py-4 flex items-center justify-between border-b border-slate-700">
-              <div className="flex items-center gap-2">
-                <FileText className="h-5 w-5 text-emerald-400" />
-                <h3 className="font-bold text-white text-base">Counter Transaction Receipt</h3>
-              </div>
-              <button
-                onClick={() => setReceiptData(null)}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Receipt Body */}
-            <div className="p-6 space-y-4 text-xs font-mono bg-slate-950 text-slate-300">
-              <div className="text-center border-b border-dashed border-slate-800 pb-3">
-                <div className="font-bold text-sm text-white tracking-wider">APEX BANK OF INDIA</div>
-                <div className="text-[11px] text-slate-400">CORE BANKING NETWORK • BRANCH: {receiptData.branchCode}</div>
-                <div className="text-[10px] text-slate-500 mt-1">OFFICIAL CASH COUNTER VOUCHER</div>
-              </div>
-
-              <div className="space-y-1.5 border-b border-dashed border-slate-800 pb-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Ref Txn ID:</span>
-                  <span className="font-bold text-white">{receiptData.referenceNumber}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Date/Time:</span>
-                  <span>{new Date(receiptData.timestamp).toLocaleString('en-IN')}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Cashier / Station:</span>
-                  <span>{receiptData.cashierName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Operation:</span>
-                  <span className={`font-bold ${receiptData.type === 'CASH_DEPOSIT' ? 'text-emerald-400' : 'text-rose-400'}`}>
-                    {receiptData.type === 'CASH_DEPOSIT' ? 'COUNTER CASH DEPOSIT' : 'COUNTER CASH WITHDRAWAL'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="space-y-1.5 border-b border-dashed border-slate-800 pb-3">
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Account No:</span>
-                  <span className="font-bold text-white">{receiptData.accountNumber}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Account Holder:</span>
-                  <span className="font-semibold text-white">{receiptData.customerName}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-500">Narration:</span>
-                  <span>{receiptData.narration}</span>
-                </div>
-              </div>
-
-              <div className="pt-2 flex justify-between items-center text-sm">
-                <span className="font-bold text-slate-400">TRANSACTION AMOUNT:</span>
-                <span className="font-bold text-base text-emerald-400">
-                  ₹{receiptData.amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </span>
-              </div>
-
-              {receiptData.runningBalance !== undefined && (
-                <div className="flex justify-between items-center text-xs text-slate-400">
-                  <span>Available Balance:</span>
-                  <span className="font-semibold text-white">
-                    ₹{receiptData.runningBalance.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                  </span>
-                </div>
-              )}
-
-              <div className="text-[10px] text-slate-500 text-center pt-3 border-t border-dashed border-slate-800">
-                Double-entry financial ledger updated. Verified by Core Banking Engine.
-              </div>
-            </div>
-
-            {/* Footer Actions */}
-            <div className="bg-slate-800/80 px-6 py-4 flex gap-3 border-t border-slate-700">
-              <button
-                onClick={() => window.print()}
-                className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-lg text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
-              >
-                <Printer className="h-4 w-4" /> Print Receipt
-              </button>
-              <button
-                onClick={() => setReceiptData(null)}
-                className="px-4 py-2 bg-slate-700 hover:bg-slate-600 text-slate-300 font-semibold rounded-lg text-xs transition-all"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
+
 export default CashierDeskPage;

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import api from '../api/axios';
+import api, { cachedGet } from '../api/axios';
 import { ApiResponse } from '../types/auth';
+import { AiSecurityMarker } from '../components/common/AiSecurityMarker';
 import {
   Send,
   CheckCircle2,
@@ -15,6 +16,7 @@ import {
   Layers,
   Activity,
   ArrowRight,
+  ArrowLeft,
   Filter,
   Sliders,
   CheckCircle,
@@ -22,7 +24,8 @@ import {
   HelpCircle,
   Copy,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Printer
 } from 'lucide-react';
 
 interface AccountOption {
@@ -124,11 +127,11 @@ export const FundTransferPage: React.FC = () => {
   const fetchAccounts = async () => {
     setLoadingAccounts(true);
     try {
-      const res = await api.get<ApiResponse<{ content: AccountOption[] }>>('/accounts?size=50');
-      if (res.data?.success && res.data.data?.content) {
-        setAccounts(res.data.data.content);
-        if (res.data.data.content.length > 0 && !sourceAccount) {
-          setSourceAccount(res.data.data.content[0].accountNumber);
+      const data = await cachedGet<{ content: AccountOption[] }>('/accounts?size=50', false, 30000);
+      if (data?.content) {
+        setAccounts(data.content);
+        if (data.content.length > 0 && !sourceAccount) {
+          setSourceAccount(data.content[0].accountNumber);
         }
       }
     } catch {
@@ -140,9 +143,9 @@ export const FundTransferPage: React.FC = () => {
 
   const fetchRailConfigs = async () => {
     try {
-      const res = await api.get<ApiResponse<PaymentRailConfig[]>>('/payments/config');
-      if (res.data?.success && res.data.data) {
-        setRailConfigs(res.data.data);
+      const data = await cachedGet<PaymentRailConfig[]>('/payments/config', false, 60000);
+      if (data) {
+        setRailConfigs(data);
       }
     } catch {
       // fallback
@@ -154,12 +157,14 @@ export const FundTransferPage: React.FC = () => {
     try {
       const railParam = railFilter !== 'ALL' ? `&railType=${railFilter}` : '';
       const statusParam = statusFilter !== 'ALL' ? `&status=${statusFilter}` : '';
-      const res = await api.get<ApiResponse<{ content: PaymentRailResponse[]; totalPages: number }>>(
-        `/payments/history?page=${page}&size=8${railParam}${statusParam}`
+      const data = await cachedGet<{ content: PaymentRailResponse[]; totalPages: number }>(
+        `/payments/history?page=${page}&size=8${railParam}${statusParam}`,
+        false,
+        15000
       );
-      if (res.data?.success && res.data.data) {
-        setHistory(res.data.data.content || []);
-        setTotalPages(res.data.data.totalPages || 1);
+      if (data) {
+        setHistory(data.content || []);
+        setTotalPages(data.totalPages || 1);
         setHistoryPage(page);
       }
     } catch {
@@ -345,60 +350,324 @@ export const FundTransferPage: React.FC = () => {
     }
   };
 
+  // DEDICATED FULL-PAGE VIEW: AI Clearing Reconciliation Inspector (replaces popup modal)
+  if (reconcilingRecord) {
+    return (
+      <div className="space-y-6 max-w-5xl mx-auto font-sans pb-12">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+          <button
+            onClick={() => setReconcilingRecord(null)}
+            className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-emerald-800 transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Payment Rail Switch</span>
+          </button>
+          <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            NPCI / RBI SETTLEMENT FORENSICS
+          </span>
+        </div>
+
+        <AiSecurityMarker
+          moduleName="National Payment Rail Settlement & UTR Reconciliation Engine"
+          confidenceScore={99.8}
+          anomalyScore={0.02}
+          riskRating="LOW"
+          statusText="Automated 5-Point Clearing Reconciliation Active"
+          referenceCode={reconcilingRecord.paymentReference}
+        />
+
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="border-b border-slate-100 pb-4">
+            <h2 className="text-xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+              <Clock className="w-5 h-5 text-emerald-700" />
+              <span>Simulate Clearing Reconciliation: {reconcilingRecord.paymentReference}</span>
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              Verify UTR matching, NPCI RRN sequence, and double-entry clearing ledger balances.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-[11px] text-slate-500 font-bold uppercase font-mono">Payment Reference</div>
+              <div className="text-sm font-mono font-bold text-slate-900 mt-1">{reconcilingRecord.paymentReference}</div>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-[11px] text-slate-500 font-bold uppercase font-mono">Clearing Status</div>
+              <div className="text-sm font-bold text-amber-800 mt-1">{reconcilingRecord.status}</div>
+            </div>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-[11px] text-slate-500 font-bold uppercase font-mono">Settlement Amount</div>
+              <div className="text-base font-mono font-extrabold text-emerald-800 mt-1">
+                ₹{reconcilingRecord.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+              </div>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-2 font-mono">
+                Target Reconciliation Outcome
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setReconcileAction('SETTLED')}
+                  className={`p-3 rounded-xl border font-bold text-xs transition ${
+                    reconcileAction === 'SETTLED'
+                      ? 'bg-emerald-800 border-2 border-emerald-900 text-white shadow-md'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  Confirm Settlement (SETTLED)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setReconcileAction('FAILED')}
+                  className={`p-3 rounded-xl border font-bold text-xs transition ${
+                    reconcileAction === 'FAILED'
+                      ? 'bg-rose-800 border-2 border-rose-900 text-white shadow-md'
+                      : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
+                  }`}
+                >
+                  Clearing Failure & Refund (FAILED)
+                </button>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-slate-900 uppercase tracking-wider mb-1.5 font-mono">
+                Reconciliation Audit Remarks
+              </label>
+              <textarea
+                value={reconcileRemarks}
+                onChange={(e) => setReconcileRemarks(e.target.value)}
+                rows={3}
+                placeholder="Enter regulatory clearing remarks or bank statement reference..."
+                className="w-full bg-slate-50 border border-slate-300 rounded-xl p-3 text-slate-900 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 shadow-inner font-medium"
+              />
+            </div>
+
+            <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-100">
+              <button
+                type="button"
+                onClick={() => setReconcilingRecord(null)}
+                className="px-5 py-2.5 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-bold transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={isReconciling}
+                onClick={handleSimulateReconcile}
+                className="px-6 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold shadow-md border border-emerald-900 transition disabled:opacity-50"
+              >
+                {isReconciling ? 'Committing...' : 'Commit Reconciliation'}
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // DEDICATED FULL-PAGE VIEW: Payment Settlement Execution Advice & AI Ledger Forensics
+  if (successResult) {
+    return (
+      <div className="space-y-6 max-w-4xl mx-auto font-sans pb-12">
+        <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+          <button
+            onClick={() => setSuccessResult(null)}
+            className="flex items-center gap-2 text-xs font-bold text-slate-600 hover:text-emerald-800 transition"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Return to Payment Terminal</span>
+          </button>
+          <span className="text-xs font-mono font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+            OFFICIAL CLEARING EXECUTION ADVICE
+          </span>
+        </div>
+
+        <AiSecurityMarker
+          moduleName="CBS Core Payment Clearing & Ledger Verification Engine"
+          confidenceScore={99.9}
+          anomalyScore={0.01}
+          riskRating="LOW"
+          statusText="Double-Entry General Ledger Balanced & Cryptographically Sealed"
+          referenceCode={successResult.paymentReference}
+        />
+
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 shadow-sm space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-5">
+            <div>
+              <div className="flex items-center gap-2 text-emerald-800 font-bold text-base">
+                <CheckCircle2 className="w-5 h-5 text-emerald-700" />
+                <span>Payment Settlement Execution Advice</span>
+              </div>
+              <p className="text-xs text-slate-500 mt-1">
+                Official double-entry voucher generated by Apex National Bank Core Switch.
+              </p>
+            </div>
+            <div className="flex items-center gap-2">
+              {getStatusBadge(successResult.status)}
+            </div>
+          </div>
+
+          <div className="bg-emerald-50/60 border border-emerald-200 rounded-2xl p-6 text-center">
+            <span className="text-xs font-bold text-slate-500 uppercase font-mono tracking-wider">
+              Total Customer Debited
+            </span>
+            <div className="text-3xl sm:text-4xl font-extrabold font-mono text-emerald-800 mt-1">
+              ₹{successResult.totalDebited?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </div>
+            <div className="text-xs text-slate-500 mt-1">
+              Transfer Principal: ₹{successResult.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })} • Rail Fee: ₹{successResult.fee?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
+            </div>
+          </div>
+
+          {/* Details Grid */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs font-mono">
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Payment Reference</span>
+              <div className="font-bold text-slate-900 text-sm mt-1">{successResult.paymentReference}</div>
+            </div>
+            {successResult.utrNumber ? (
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="text-slate-500 font-bold font-sans">RBI Clearing UTR</span>
+                <div className="font-bold text-emerald-800 text-sm mt-1 flex items-center justify-between">
+                  <span>{successResult.utrNumber}</span>
+                  <button onClick={() => handleCopy(successResult.utrNumber!, 'advice-utr')} className="text-slate-400 hover:text-emerald-700">
+                    <Copy className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              </div>
+            ) : successResult.rrnNumber ? (
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="text-slate-500 font-bold font-sans">NPCI Switch RRN</span>
+                <div className="font-bold text-emerald-800 text-sm mt-1">{successResult.rrnNumber}</div>
+              </div>
+            ) : (
+              <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="text-slate-500 font-bold font-sans">Clearing Rail</span>
+                <div className="font-bold text-slate-900 text-sm mt-1 font-sans">{successResult.railType} ({successResult.settlementBatchId})</div>
+              </div>
+            )}
+
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Beneficiary Name</span>
+              <div className="font-bold text-slate-900 text-sm mt-1 font-sans">{successResult.beneficiaryName}</div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200">
+              <span className="text-slate-500 font-bold font-sans">Destination Account & IFSC</span>
+              <div className="font-bold text-slate-900 text-sm mt-1">
+                {successResult.destinationAccountNumber} ({successResult.beneficiaryIfsc})
+              </div>
+            </div>
+          </div>
+
+          {/* Balanced Double-Entry General Ledger Impact */}
+          <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-2 text-xs font-mono">
+            <div className="text-[11px] font-bold text-slate-700 uppercase font-sans tracking-wider">
+              Balanced Double-Entry General Ledger Impact
+            </div>
+            <div className="flex justify-between text-rose-700 font-bold p-2.5 bg-white rounded-lg border border-slate-200">
+              <span>DR {successResult.debitGLAccount || '2010-DEMAND-DEPOSITS-SAVINGS'}</span>
+              <span>₹{successResult.totalDebited?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            </div>
+            <div className="flex justify-between text-emerald-800 font-bold p-2.5 bg-white rounded-lg border border-slate-200">
+              <span>CR {successResult.creditGLAccount || '1040-RBI-RESERVE-BALANCE'}</span>
+              <span>₹{successResult.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+            </div>
+            {successResult.fee > 0 && (
+              <div className="flex justify-between text-emerald-800 font-bold p-2.5 bg-white rounded-lg border border-slate-200">
+                <span>CR 4020-FEE-COMMISSION-INCOME</span>
+                <span>₹{successResult.fee?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
+              </div>
+            )}
+          </div>
+
+          {successResult.simulationNotes && (
+            <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-900">
+              <span className="font-bold">Simulation Ledger Note: </span>
+              <span>{successResult.simulationNotes}</span>
+            </div>
+          )}
+
+          <div className="flex items-center gap-3 pt-4 border-t border-slate-100">
+            <button
+              onClick={() => window.print()}
+              className="px-5 py-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs flex items-center gap-2 border border-slate-200 transition"
+            >
+              <Printer className="w-4 h-4 text-slate-600" />
+              <span>Print Execution Advice</span>
+            </button>
+            <button
+              onClick={() => setSuccessResult(null)}
+              className="flex-1 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white font-bold text-xs shadow-md transition"
+            >
+              Done & Return to Terminal
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       {/* Simulation Notice Banner */}
-      <div className="bg-gradient-to-r from-emerald-950/90 via-slate-900 to-emerald-950/90 border border-emerald-500/40 rounded-xl p-4 shadow-lg backdrop-blur-sm">
+      <div className="bg-gradient-to-r from-emerald-950 via-emerald-900 to-[#06231D] border border-emerald-800 rounded-2xl p-5 shadow-lg text-white">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
           <div className="flex items-start gap-3">
-            <div className="p-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 shrink-0">
+            <div className="p-2.5 rounded-xl bg-emerald-500/20 border border-emerald-400/40 text-emerald-300 shrink-0">
               <ShieldAlert className="h-5 w-5" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-bold tracking-wider uppercase px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <span className="text-xs font-bold tracking-wider uppercase px-2.5 py-0.5 rounded-full bg-emerald-500/30 text-emerald-200 border border-emerald-400/50">
                   DEMO / SIMULATION MODE ACTIVE
                 </span>
-                <span className="text-xs text-slate-400">• High-Fidelity CBS Payment Rail Simulator</span>
+                <span className="text-xs text-emerald-100/90">• High-Fidelity CBS Payment Rail Simulator</span>
               </div>
-              <p className="text-xs text-slate-300 mt-1 leading-relaxed">
+              <p className="text-xs text-emerald-100/80 mt-1 leading-relaxed">
                 Transactions generate synthetic RBI UTRs, NPCI RRNs, and double-entry general ledger postings in compliance
                 with Indian banking regulations. Integration Mode for external RBI/NPCI rails remains safely isolated.
               </p>
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <span className="text-[11px] text-slate-400">Operating Mode:</span>
-            <span className="text-xs font-semibold px-2.5 py-1 rounded bg-slate-800 border border-slate-700 text-emerald-300">
+            <span className="text-[11px] text-emerald-200">Operating Mode:</span>
+            <span className="text-xs font-bold px-3 py-1 rounded-lg bg-black/40 border border-emerald-800 text-emerald-300">
               SIMULATION (Safe)
             </span>
           </div>
         </div>
       </div>
 
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-emerald-900/30 pb-5">
+      {/* Header - High Contrast Executive Swiss Emerald */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-slate-200 pb-5">
         <div>
-          <div className="flex items-center space-x-2 text-xs font-semibold uppercase tracking-wider text-emerald-400">
+          <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-emerald-800 font-mono">
             <span>Payment Rail Gateway</span>
             <span>•</span>
             <span>Electronic Clearance & Double-Entry Settlement</span>
           </div>
-          <h1 className="text-2xl font-bold tracking-tight text-white mt-1 flex items-center gap-3">
-            <Send className="h-7 w-7 text-emerald-400" />
-            Electronic Payment Rail Switch
+          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mt-1 flex items-center gap-3">
+            <Send className="h-7 w-7 text-emerald-700" />
+            <span>Electronic Payment Rail Switch</span>
           </h1>
-          <p className="text-sm text-slate-400 mt-1">
+          <p className="text-xs text-slate-500 mt-1">
             Execute and simulate Apex Internal Book Transfers, NEFT Half-Hourly Batches, RTGS Gross Settlements, and IMPS 24×7 Instant Payments.
           </p>
         </div>
 
         {/* Live Rail Adapter Health Status */}
-        <div className="flex items-center gap-2 bg-slate-900/90 border border-emerald-900/50 px-4 py-2 rounded-xl text-xs">
-          <Activity className="h-4 w-4 text-emerald-400 animate-pulse" />
+        <div className="flex items-center gap-2 bg-emerald-50 border border-emerald-200 px-4 py-2 rounded-xl text-xs shadow-xs">
+          <Activity className="h-4 w-4 text-emerald-700 animate-pulse" />
           <div>
-            <span className="text-slate-400">Adapters: </span>
-            <span className="font-semibold text-emerald-400">INTERNAL • NEFT • RTGS • IMPS ONLINE</span>
+            <span className="text-slate-600 font-medium">Adapters: </span>
+            <span className="font-bold text-emerald-800">INTERNAL • NEFT • RTGS • IMPS ONLINE</span>
           </div>
         </div>
       </div>
@@ -406,28 +675,28 @@ export const FundTransferPage: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Left Column: Transfer & Simulation Sandbox */}
         <div className="lg:col-span-8 space-y-6">
-          <form onSubmit={handleTransfer} className="bg-slate-900/80 border border-emerald-900/40 rounded-xl p-6 space-y-5 shadow-xl">
+          <form onSubmit={handleTransfer} className="bg-white border border-slate-200/90 rounded-2xl p-6 sm:p-8 space-y-6 shadow-sm text-slate-900">
             {errorMsg && (
-              <div className="flex items-center gap-3 text-rose-300 bg-rose-950/60 border border-rose-800 px-4 py-3 rounded-lg text-sm">
-                <AlertTriangle className="h-5 w-5 shrink-0 text-rose-400" />
+              <div className="flex items-center gap-3 text-rose-800 bg-rose-50 border border-rose-300 px-4 py-3 rounded-xl text-xs font-semibold">
+                <AlertTriangle className="h-5 w-5 shrink-0 text-rose-600" />
                 <span>{errorMsg}</span>
               </div>
             )}
 
             {/* 1. Source Account */}
             <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider mb-2">
-                1. Select Source Funding Account <span className="text-rose-400">*</span>
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 font-mono">
+                1. Select Source Funding Account <span className="text-rose-500">*</span>
               </label>
               {loadingAccounts ? (
-                <div className="text-xs text-slate-400 flex items-center gap-2 py-2">
-                  <RefreshCw className="h-4 w-4 animate-spin text-emerald-400" /> Loading account list...
+                <div className="text-xs text-slate-500 flex items-center gap-2 py-2">
+                  <RefreshCw className="h-4 w-4 animate-spin text-emerald-700" /> Loading account list...
                 </div>
               ) : (
                 <select
                   value={sourceAccount}
                   onChange={(e) => setSourceAccount(e.target.value)}
-                  className="w-full bg-slate-950 border border-slate-700/80 rounded-lg px-4 py-3 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 font-mono"
+                  className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-3 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-mono shadow-inner font-medium"
                   required
                 >
                   {accounts.map((acc) => (
@@ -440,14 +709,14 @@ export const FundTransferPage: React.FC = () => {
               )}
 
               {selectedSourceObj && (
-                <div className="mt-2.5 bg-slate-950/70 border border-slate-800 rounded-lg p-3 flex justify-between items-center text-xs">
+                <div className="mt-2.5 bg-slate-50 border border-slate-200 rounded-xl p-3.5 flex justify-between items-center text-xs">
                   <div>
-                    <span className="text-slate-400">Account Holder:</span>
-                    <span className="ml-1.5 font-semibold text-white">{selectedSourceObj.customerName}</span>
+                    <span className="text-slate-500 font-medium">Account Holder:</span>
+                    <span className="ml-1.5 font-bold text-slate-900">{selectedSourceObj.customerName}</span>
                   </div>
                   <div>
-                    <span className="text-slate-400">Available Balance:</span>
-                    <span className="ml-1.5 font-mono font-bold text-emerald-400 text-sm">
+                    <span className="text-slate-500 font-medium">Available Balance:</span>
+                    <span className="ml-1.5 font-mono font-extrabold text-emerald-800 text-sm">
                       ₹{selectedSourceObj.availableBalance?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </span>
                   </div>
@@ -458,10 +727,10 @@ export const FundTransferPage: React.FC = () => {
             {/* 2. Payment Rail Selection */}
             <div>
               <div className="flex items-center justify-between mb-2">
-                <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
-                  2. Select Payment Rail Architecture <span className="text-rose-400">*</span>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">
+                  2. Select Payment Rail Architecture <span className="text-rose-500">*</span>
                 </label>
-                <span className="text-[11px] text-slate-400">Enforced by Core Banking Adapters</span>
+                <span className="text-[11px] text-slate-500 font-medium">Enforced by Core Banking Adapters</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 {[
@@ -511,49 +780,49 @@ export const FundTransferPage: React.FC = () => {
                     }}
                     className={`p-3.5 rounded-xl border text-left transition-all relative ${
                       selectedRail === rail.id
-                        ? 'bg-emerald-950/60 border-emerald-500 ring-2 ring-emerald-500/40 text-white shadow-lg shadow-emerald-950/50'
-                        : 'bg-slate-950/80 border-slate-800 text-slate-400 hover:border-slate-700 hover:text-slate-300'
+                        ? 'bg-emerald-800 border-2 border-emerald-900 text-white shadow-md'
+                        : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <div className="font-bold text-xs text-white">{rail.title}</div>
+                      <div className={`font-bold text-xs ${selectedRail === rail.id ? 'text-white' : 'text-slate-900'}`}>{rail.title}</div>
                       <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded font-semibold ${
+                        className={`text-[10px] px-1.5 py-0.5 rounded font-bold ${
                           selectedRail === rail.id
-                            ? 'bg-emerald-500/20 text-emerald-300'
-                            : 'bg-slate-800 text-slate-400'
+                            ? 'bg-emerald-700 text-emerald-100'
+                            : 'bg-slate-200 text-slate-700'
                         }`}
                       >
                         {rail.tag}
                       </span>
                     </div>
-                    <div className="text-[11px] text-slate-400 mt-1 leading-snug">{rail.desc}</div>
-                    <div className="text-[11px] font-mono font-semibold text-emerald-400 mt-2">{rail.fee}</div>
+                    <div className={`text-[11px] mt-1 leading-snug ${selectedRail === rail.id ? 'text-emerald-100' : 'text-slate-500'}`}>{rail.desc}</div>
+                    <div className={`text-[11px] font-mono font-bold mt-2 ${selectedRail === rail.id ? 'text-emerald-200' : 'text-emerald-800'}`}>{rail.fee}</div>
                   </button>
                 ))}
               </div>
             </div>
 
             {/* 3. Beneficiary & Destination Details */}
-            <div className="space-y-4 pt-3 border-t border-slate-800">
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+            <div className="space-y-4 pt-3 border-t border-slate-200">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">
                 3. Beneficiary & Destination Clearing Details
               </label>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Beneficiary Name</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 font-mono">Beneficiary Name</label>
                   <input
                     type="text"
                     value={beneficiaryName}
                     onChange={(e) => setBeneficiaryName(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-medium"
                     placeholder="e.g. Priya Patel"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 font-mono">
                     Destination IFSC Code {selectedRail === 'INTERNAL' && '(Internal Book)'}
                   </label>
                   <input
@@ -561,16 +830,16 @@ export const FundTransferPage: React.FC = () => {
                     value={beneficiaryIfsc}
                     onChange={(e) => setBeneficiaryIfsc(e.target.value.toUpperCase())}
                     disabled={selectedRail === 'INTERNAL'}
-                    className={`w-full bg-slate-950 border rounded-lg px-3.5 py-2.5 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                    className={`w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 ${
                       selectedRail === 'INTERNAL'
-                        ? 'opacity-60 border-slate-800 cursor-not-allowed'
-                        : 'border-slate-700'
+                        ? 'opacity-60 border-slate-200 bg-slate-100 cursor-not-allowed'
+                        : 'border-slate-300'
                     }`}
                     placeholder="e.g. HDFC0001234"
                   />
                   {selectedRail !== 'INTERNAL' && beneficiaryIfsc.length === 11 && (
-                    <div className="text-[10px] text-emerald-400 mt-1 flex items-center gap-1">
-                      <CheckCircle2 className="h-3 w-3" /> Valid 11-digit IFSC structure
+                    <div className="text-[11px] text-emerald-800 mt-1 flex items-center gap-1 font-semibold">
+                      <CheckCircle2 className="h-3.5 w-3.5" /> Valid 11-digit IFSC structure
                     </div>
                   )}
                 </div>
@@ -578,30 +847,30 @@ export const FundTransferPage: React.FC = () => {
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">
-                    Beneficiary Account Number <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 font-mono">
+                    Beneficiary Account Number <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={destAccount}
                     onChange={(e) => setDestAccount(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2.5 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                     placeholder="Enter destination account number"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">
-                    Confirm Account Number <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 font-mono">
+                    Confirm Account Number <span className="text-rose-500">*</span>
                   </label>
                   <input
                     type="text"
                     value={destAccountConfirm}
                     onChange={(e) => setDestAccountConfirm(e.target.value)}
-                    className={`w-full bg-slate-950 border rounded-lg px-3.5 py-2.5 text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500 ${
+                    className={`w-full bg-slate-50 border rounded-xl px-4 py-2.5 text-slate-900 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 ${
                       destAccountConfirm && destAccount !== destAccountConfirm
-                        ? 'border-rose-500 ring-1 ring-rose-500'
-                        : 'border-slate-700'
+                        ? 'border-rose-500 ring-2 ring-rose-200'
+                        : 'border-slate-300'
                     }`}
                     placeholder="Re-enter destination account number"
                     required
@@ -611,73 +880,73 @@ export const FundTransferPage: React.FC = () => {
             </div>
 
             {/* 4. Transfer Amount, Purpose & Fee Breakdown */}
-            <div className="space-y-4 pt-3 border-t border-slate-800">
-              <label className="block text-xs font-bold text-slate-300 uppercase tracking-wider">
+            <div className="space-y-4 pt-3 border-t border-slate-200">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider font-mono">
                 4. Transfer Amount & Ledger Debits
               </label>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">
-                    Amount (₹) <span className="text-rose-400">*</span>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 font-mono">
+                    Amount (₹) <span className="text-rose-500">*</span>
                   </label>
                   <div className="relative">
-                    <span className="absolute left-3.5 top-2.5 text-slate-400 font-bold">₹</span>
+                    <span className="absolute left-3.5 top-2.5 text-slate-500 font-bold font-mono">₹</span>
                     <input
                       type="number"
                       min="1"
                       value={amount || ''}
                       onChange={(e) => setAmount(Number(e.target.value))}
-                      className="w-full bg-slate-950 border border-slate-700 rounded-lg pl-8 pr-4 py-2.5 text-white font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                      className="w-full bg-slate-50 border border-slate-300 rounded-xl pl-8 pr-4 py-2.5 text-slate-900 font-mono font-bold text-lg focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600"
                       placeholder="25000"
                       required
                     />
                   </div>
                   {selectedRail === 'RTGS' && amount < 200000 && (
-                    <div className="text-[11px] text-amber-400 mt-1 flex items-center gap-1 font-medium">
-                      <AlertTriangle className="h-3 w-3 shrink-0" /> Minimum RTGS transaction is ₹2,00,000
+                    <div className="text-[11px] text-amber-700 mt-1 flex items-center gap-1 font-semibold">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> Minimum RTGS transaction is ₹2,00,000
                     </div>
                   )}
                   {selectedRail === 'IMPS' && amount > 500000 && (
-                    <div className="text-[11px] text-rose-400 mt-1 flex items-center gap-1 font-medium">
-                      <AlertTriangle className="h-3 w-3 shrink-0" /> IMPS maximum ceiling is ₹5,00,000
+                    <div className="text-[11px] text-rose-700 mt-1 flex items-center gap-1 font-semibold">
+                      <AlertTriangle className="h-3.5 w-3.5 shrink-0" /> IMPS maximum ceiling is ₹5,00,000
                     </div>
                   )}
                 </div>
 
                 <div>
-                  <label className="block text-xs text-slate-400 mb-1">Payment Purpose / Narration</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1.5 font-mono">Payment Purpose / Narration</label>
                   <input
                     type="text"
                     value={narration}
                     onChange={(e) => setNarration(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-700 rounded-lg px-3.5 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                    className="w-full bg-slate-50 border border-slate-300 rounded-xl px-4 py-2.5 text-slate-900 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500/20 focus:border-emerald-600 font-medium"
                     placeholder="e.g. Vendor settlement remittance"
                   />
                 </div>
               </div>
 
               {/* Dynamic Ledger Debit Summary Box */}
-              <div className="bg-slate-950/80 border border-emerald-900/50 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
+              <div className="bg-emerald-50/70 border border-emerald-200 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs">
                 <div className="flex items-center gap-4">
                   <div>
-                    <span className="text-slate-400">Transfer Principal:</span>
-                    <div className="font-mono font-bold text-white text-sm mt-0.5">
+                    <span className="text-slate-500 font-medium">Transfer Principal:</span>
+                    <div className="font-mono font-bold text-slate-900 text-sm mt-0.5">
                       ₹{amount.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
                   </div>
-                  <div className="text-slate-600 font-bold">+</div>
+                  <div className="text-slate-400 font-bold">+</div>
                   <div>
-                    <span className="text-slate-400">Rail Clearing Fee:</span>
-                    <div className="font-mono font-bold text-emerald-400 text-sm mt-0.5">
+                    <span className="text-slate-500 font-medium">Rail Clearing Fee:</span>
+                    <div className="font-mono font-bold text-emerald-800 text-sm mt-0.5">
                       ₹{estimatedFee.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </div>
                   </div>
                 </div>
 
-                <div className="sm:border-l sm:border-slate-800 sm:pl-6">
-                  <span className="text-slate-400">Total Customer Debit:</span>
-                  <div className="font-mono font-bold text-emerald-300 text-base mt-0.5">
+                <div className="sm:border-l sm:border-emerald-200 sm:pl-6">
+                  <span className="text-slate-500 font-medium">Total Customer Debit:</span>
+                  <div className="font-mono font-extrabold text-emerald-900 text-lg mt-0.5">
                     ₹{totalDebited.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                   </div>
                 </div>
@@ -685,30 +954,30 @@ export const FundTransferPage: React.FC = () => {
             </div>
 
             {/* 5. Simulation Sandbox Controls */}
-            <div className="bg-emerald-950/30 border border-emerald-800/40 rounded-xl p-4 space-y-3">
+            <div className="bg-slate-50 border border-slate-200 rounded-xl p-4 space-y-3">
               <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-xs font-bold text-emerald-300 uppercase tracking-wider">
-                  <Sliders className="h-4 w-4 text-emerald-400" />
+                <div className="flex items-center gap-2 text-xs font-bold text-emerald-900 uppercase tracking-wider font-mono">
+                  <Sliders className="h-4 w-4 text-emerald-700" />
                   <span>Clearing Simulation Scenario Sandbox</span>
                 </div>
-                <span className="text-[10px] text-slate-400">Choose simulated clearing response</span>
+                <span className="text-[11px] text-slate-500">Choose simulated clearing response</span>
               </div>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
                 {[
-                  { id: 'SUCCESS' as const, label: 'Success (Settled)', color: 'text-emerald-300 border-emerald-500/40' },
-                  { id: 'PENDING_CLEARING' as const, label: 'Queue in Batch', color: 'text-amber-300 border-amber-500/40' },
-                  { id: 'BENEFICIARY_REJECTED' as const, label: 'Bank Rejection', color: 'text-rose-300 border-rose-500/40' },
-                  { id: 'NETWORK_TIMEOUT' as const, label: 'Gateway Timeout', color: 'text-orange-300 border-orange-500/40' },
+                  { id: 'SUCCESS' as const, label: 'Success (Settled)' },
+                  { id: 'PENDING_CLEARING' as const, label: 'Queue in Batch' },
+                  { id: 'BENEFICIARY_REJECTED' as const, label: 'Bank Rejection' },
+                  { id: 'NETWORK_TIMEOUT' as const, label: 'Gateway Timeout' },
                 ].map((s) => (
                   <button
                     key={s.id}
                     type="button"
                     onClick={() => setSimulatedOutcome(s.id)}
-                    className={`py-2 px-2.5 rounded-lg border text-center text-xs font-medium transition-all ${
+                    className={`py-2 px-2.5 rounded-lg border text-center text-xs font-bold transition-all ${
                       simulatedOutcome === s.id
-                        ? `bg-emerald-900/50 ${s.color} ring-1 ring-emerald-500 font-bold`
-                        : 'bg-slate-950/70 border-slate-800 text-slate-400 hover:text-white'
+                        ? 'bg-emerald-800 border-2 border-emerald-900 text-white shadow-xs'
+                        : 'bg-white border-slate-200 text-slate-700 hover:bg-slate-100'
                     }`}
                   >
                     {s.label}
@@ -721,7 +990,7 @@ export const FundTransferPage: React.FC = () => {
             <button
               type="submit"
               disabled={isSubmitting || !sourceAccount}
-              className="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-emerald-600 via-emerald-700 to-teal-700 hover:from-emerald-500 hover:to-teal-600 shadow-lg shadow-emerald-950/60 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full py-3.5 px-4 rounded-xl font-bold text-sm text-white bg-gradient-to-r from-emerald-700 via-emerald-800 to-[#06231D] hover:from-emerald-600 hover:to-emerald-800 shadow-md transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? (
                 <>
@@ -741,9 +1010,9 @@ export const FundTransferPage: React.FC = () => {
         {/* Right Column: Beneficiary Shortcuts & Rail Specs */}
         <div className="lg:col-span-4 space-y-6">
           {/* Quick Beneficiaries Directory */}
-          <div className="bg-slate-900/80 border border-emerald-900/40 rounded-xl p-5 space-y-4 shadow-xl">
-            <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-              <UserCheck className="h-4 w-4 text-emerald-400" />
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-4 shadow-sm">
+            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 font-mono">
+              <UserCheck className="h-4 w-4 text-emerald-700" />
               Verified Beneficiary Shortcuts
             </h3>
 
@@ -766,17 +1035,17 @@ export const FundTransferPage: React.FC = () => {
                     else if (b.type.includes('IMPS')) setSelectedRail('IMPS');
                     else setSelectedRail('NEFT');
                   }}
-                  className="p-3 bg-slate-950/70 border border-slate-800 hover:border-emerald-500/60 rounded-xl cursor-pointer transition-all hover:bg-emerald-950/30 group"
+                  className="p-3.5 bg-slate-50 hover:bg-emerald-50/60 border border-slate-200 hover:border-emerald-400 rounded-xl cursor-pointer transition text-slate-900 group shadow-xs"
                 >
                   <div className="flex justify-between items-start">
-                    <div className="font-semibold text-xs text-white group-hover:text-emerald-300 transition-colors">
+                    <div className="font-bold text-xs text-slate-900 group-hover:text-emerald-800 transition-colors">
                       {b.name}
                     </div>
-                    <span className="text-[10px] bg-slate-800 text-emerald-400 px-1.5 py-0.5 rounded font-mono">
+                    <span className="text-[10px] bg-slate-200 group-hover:bg-emerald-100 text-slate-800 group-hover:text-emerald-800 px-1.5 py-0.5 rounded font-mono font-bold">
                       {b.type}
                     </span>
                   </div>
-                  <div className="text-[11px] font-mono text-slate-400 mt-1">{b.acc}</div>
+                  <div className="text-[11px] font-mono text-slate-600 mt-1 font-semibold">{b.acc}</div>
                   <div className="text-[10px] text-slate-500 mt-0.5">
                     {b.bank} • IFSC: {b.ifsc}
                   </div>
@@ -786,29 +1055,29 @@ export const FundTransferPage: React.FC = () => {
           </div>
 
           {/* Payment Rail Protocols Reference */}
-          <div className="bg-slate-900/80 border border-emerald-900/40 rounded-xl p-5 space-y-3.5 shadow-xl">
-            <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center gap-2">
-              <Building className="h-4 w-4 text-emerald-400" />
+          <div className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-3.5 shadow-sm">
+            <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider flex items-center gap-2 font-mono">
+              <Building className="h-4 w-4 text-emerald-700" />
               RBI & NPCI Settlement Specifications
             </h4>
-            <div className="space-y-3 text-xs text-slate-400 leading-relaxed">
-              <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="font-semibold text-slate-200">NEFT Batch Clearing:</span>
-                <p className="mt-0.5 text-[11px] text-slate-400">
-                  Operates in 48 half-hourly batches daily. Generates standardized 16-character UTR (<code className="text-emerald-400 font-mono">APEXN...</code>).
+            <div className="space-y-3 text-xs text-slate-600 leading-relaxed">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="font-bold text-slate-900">NEFT Batch Clearing:</span>
+                <p className="mt-0.5 text-[11px] text-slate-600">
+                  Operates in 48 half-hourly batches daily. Generates standardized 16-character UTR (<code className="text-emerald-800 font-mono font-bold">APEXN...</code>).
                 </p>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="font-semibold text-slate-200">RTGS Real-Time Settlement:</span>
-                <p className="mt-0.5 text-[11px] text-slate-400">
-                  Continuous gross clearing for high-value payments. Mandatory ₹2,00,000 threshold strictly enforced (<code className="text-emerald-400 font-mono">APEXR...</code>).
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="font-bold text-slate-900">RTGS Real-Time Settlement:</span>
+                <p className="mt-0.5 text-[11px] text-slate-600">
+                  Continuous gross clearing for high-value payments. Mandatory ₹2,00,000 threshold strictly enforced (<code className="text-emerald-800 font-mono font-bold">APEXR...</code>).
                 </p>
               </div>
 
-              <div className="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800">
-                <span className="font-semibold text-slate-200">IMPS 24×7 Instant:</span>
-                <p className="mt-0.5 text-[11px] text-slate-400">
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200">
+                <span className="font-bold text-slate-900">IMPS 24×7 Instant:</span>
+                <p className="mt-0.5 text-[11px] text-slate-600">
                   Immediate clearing with 12-digit Retrieval Reference Number (RRN). Per-transaction ceiling capped at ₹5,00,000.
                 </p>
               </div>
@@ -818,14 +1087,14 @@ export const FundTransferPage: React.FC = () => {
       </div>
 
       {/* Payment History & Settlement Reconciliation Table */}
-      <div className="bg-slate-900/80 border border-emerald-900/40 rounded-xl p-6 space-y-4 shadow-xl">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-6 space-y-4 shadow-sm text-slate-900">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-100 pb-4">
           <div>
-            <h3 className="text-base font-bold text-white flex items-center gap-2">
-              <Layers className="h-5 w-5 text-emerald-400" />
+            <h3 className="text-base font-extrabold text-slate-900 flex items-center gap-2">
+              <Layers className="h-5 w-5 text-emerald-700" />
               Payment Rail Transaction History & Simulated Clearing Journal
             </h3>
-            <p className="text-xs text-slate-400 mt-0.5">
+            <p className="text-xs text-slate-500 mt-0.5">
               Live audit record of all initiated, batched, settled, and simulated payments across payment rail adapters.
             </p>
           </div>
@@ -835,7 +1104,7 @@ export const FundTransferPage: React.FC = () => {
             <select
               value={railFilter}
               onChange={(e) => setRailFilter(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 font-medium focus:outline-none"
+              className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-700 font-bold focus:outline-none"
             >
               <option value="ALL">All Rails</option>
               <option value="INTERNAL">Internal Transfer</option>
@@ -847,7 +1116,7 @@ export const FundTransferPage: React.FC = () => {
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="bg-slate-950 border border-slate-800 rounded-lg px-2.5 py-1.5 text-xs text-slate-300 font-medium focus:outline-none"
+              className="bg-slate-50 border border-slate-300 rounded-xl px-3 py-1.5 text-xs text-slate-700 font-bold focus:outline-none"
             >
               <option value="ALL">All Statuses</option>
               <option value="SETTLED">Settled</option>
@@ -859,10 +1128,10 @@ export const FundTransferPage: React.FC = () => {
 
             <button
               onClick={() => fetchHistory(historyPage)}
-              className="p-1.5 rounded-lg bg-slate-800 text-slate-300 hover:text-white hover:bg-slate-700 transition-colors"
+              className="p-2 rounded-xl bg-slate-100 border border-slate-300 text-slate-700 hover:text-slate-900 hover:bg-slate-200 transition"
               title="Refresh"
             >
-              <RefreshCw className={`h-4 w-4 ${loadingHistory ? 'animate-spin text-emerald-400' : ''}`} />
+              <RefreshCw className={`h-4 w-4 ${loadingHistory ? 'animate-spin text-emerald-700' : ''}`} />
             </button>
           </div>
         </div>
@@ -871,7 +1140,7 @@ export const FundTransferPage: React.FC = () => {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>
-              <tr className="border-b border-slate-800 text-slate-400 uppercase font-semibold text-[11px] bg-slate-950/40">
+              <tr className="border-b border-slate-200 text-slate-600 uppercase font-bold text-[11px] bg-slate-50 font-mono">
                 <th className="py-3 px-4">Payment Ref</th>
                 <th className="py-3 px-4">Rail</th>
                 <th className="py-3 px-4">UTR / RRN</th>
@@ -882,11 +1151,11 @@ export const FundTransferPage: React.FC = () => {
                 <th className="py-3 px-4 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-mono">
+            <tbody className="divide-y divide-slate-100 font-mono">
               {loadingHistory ? (
                 <tr>
-                  <td colSpan={8} className="py-8 text-center text-slate-400">
-                    <RefreshCw className="h-5 w-5 animate-spin mx-auto text-emerald-400 mb-2" />
+                  <td colSpan={8} className="py-8 text-center text-slate-500 font-sans">
+                    <RefreshCw className="h-5 w-5 animate-spin mx-auto text-emerald-700 mb-2" />
                     Loading payment records...
                   </td>
                 </tr>
@@ -898,40 +1167,40 @@ export const FundTransferPage: React.FC = () => {
                 </tr>
               ) : (
                 history.map((record) => (
-                  <tr key={record.paymentReference} className="hover:bg-slate-950/40 transition-colors">
-                    <td className="py-3 px-4 text-emerald-300 font-bold">{record.paymentReference}</td>
+                  <tr key={record.paymentReference} className="hover:bg-slate-50/80 transition-colors">
+                    <td className="py-3 px-4 text-emerald-800 font-bold">{record.paymentReference}</td>
                     <td className="py-3 px-4 font-sans">
-                      <span className="font-semibold text-white">{record.railType}</span>
+                      <span className="font-bold text-slate-900">{record.railType}</span>
                       <div className="text-[10px] text-slate-500">{record.settlementBatchId}</div>
                     </td>
-                    <td className="py-3 px-4 text-slate-300">
+                    <td className="py-3 px-4 text-slate-700">
                       {record.utrNumber ? (
-                        <div className="flex items-center gap-1.5">
+                        <div className="flex items-center gap-1.5 font-bold">
                           <span>{record.utrNumber}</span>
                           <button
                             onClick={() => handleCopy(record.utrNumber!, record.paymentReference + '-utr')}
-                            className="text-slate-500 hover:text-emerald-400"
+                            className="text-slate-400 hover:text-emerald-700"
                             title="Copy UTR"
                           >
                             <Copy className="h-3 w-3" />
                           </button>
                         </div>
                       ) : record.rrnNumber ? (
-                        <span>RRN: {record.rrnNumber}</span>
+                        <span className="font-bold">RRN: {record.rrnNumber}</span>
                       ) : (
-                        <span className="text-slate-500">—</span>
+                        <span className="text-slate-400">—</span>
                       )}
                     </td>
                     <td className="py-3 px-4 font-sans">
-                      <div className="font-semibold text-white">{record.beneficiaryName}</div>
-                      <div className="text-[10px] text-slate-400 font-mono">
+                      <div className="font-bold text-slate-900">{record.beneficiaryName}</div>
+                      <div className="text-[10px] text-slate-500 font-mono">
                         {record.destinationAccountNumber} ({record.beneficiaryIfsc})
                       </div>
                     </td>
-                    <td className="py-3 px-4 font-bold text-white">
+                    <td className="py-3 px-4 font-extrabold text-slate-900">
                       ₹{record.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
-                    <td className="py-3 px-4 text-slate-400">
+                    <td className="py-3 px-4 text-slate-500">
                       ₹{record.fee?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
                     </td>
                     <td className="py-3 px-4 font-sans">{getStatusBadge(record.status)}</td>
@@ -939,16 +1208,16 @@ export const FundTransferPage: React.FC = () => {
                       {(record.status === 'SIMULATED_PENDING' || record.status === 'SIMULATED_TIMEOUT') ? (
                         <button
                           onClick={() => setReconcilingRecord(record)}
-                          className="px-2.5 py-1 rounded bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-300 text-[11px] font-semibold transition-colors"
+                          className="px-3 py-1.5 rounded-lg bg-emerald-800 hover:bg-emerald-900 text-white text-[11px] font-bold transition shadow-xs"
                         >
                           Reconcile
                         </button>
                       ) : (
                         <button
                           onClick={() => setSuccessResult(record)}
-                          className="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[11px] font-medium transition-colors"
+                          className="px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 border border-slate-300 text-slate-700 text-[11px] font-bold transition shadow-xs"
                         >
-                          Receipt
+                          View Advice
                         </button>
                       )}
                     </td>
@@ -961,23 +1230,23 @@ export const FundTransferPage: React.FC = () => {
 
         {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex items-center justify-between pt-4 border-t border-slate-800 text-xs text-slate-400 font-sans">
+          <div className="flex items-center justify-between pt-4 border-t border-slate-100 text-xs text-slate-500 font-sans">
             <div>
-              Page <span className="font-bold text-white">{historyPage + 1}</span> of{' '}
-              <span className="font-bold text-white">{totalPages}</span>
+              Page <span className="font-bold text-slate-900">{historyPage + 1}</span> of{' '}
+              <span className="font-bold text-slate-900">{totalPages}</span>
             </div>
             <div className="flex items-center gap-2">
               <button
                 disabled={historyPage === 0}
                 onClick={() => fetchHistory(historyPage - 1)}
-                className="p-1.5 rounded-lg border border-slate-800 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <ChevronLeft className="h-4 w-4" />
               </button>
               <button
                 disabled={historyPage >= totalPages - 1}
                 onClick={() => fetchHistory(historyPage + 1)}
-                className="p-1.5 rounded-lg border border-slate-800 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="p-2 rounded-lg border border-slate-200 text-slate-700 hover:bg-slate-100 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <ChevronRight className="h-4 w-4" />
               </button>
@@ -985,217 +1254,6 @@ export const FundTransferPage: React.FC = () => {
           </div>
         )}
       </div>
-
-      {/* Execution Advice & Settlement Receipt Modal */}
-      {successResult && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl w-full max-w-lg overflow-hidden shadow-2xl">
-            {/* Header */}
-            <div className="bg-emerald-950/60 px-6 py-4 flex items-center justify-between border-b border-emerald-900/60">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-5 w-5 text-emerald-400" />
-                <h3 className="font-bold text-white text-base">Payment Settlement Execution Advice</h3>
-              </div>
-              <button
-                onClick={() => setSuccessResult(null)}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            {/* Content */}
-            <div className="p-6 space-y-5 text-sm">
-              {/* Simulation Badge */}
-              <div className="flex items-center justify-between bg-emerald-950/40 border border-emerald-800/40 rounded-lg px-3 py-2 text-xs">
-                <span className="text-emerald-300 font-bold">DEMO / SIMULATION MODE</span>
-                <span className="text-slate-400">Double-Entry Certified</span>
-              </div>
-
-              {/* Amount Display */}
-              <div className="text-center py-2">
-                <div className="text-xs text-slate-400 uppercase font-semibold">Total Debited Amount</div>
-                <div className="text-3xl font-bold font-mono text-emerald-400 mt-1">
-                  ₹{successResult.totalDebited?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}
-                </div>
-                <div className="mt-2">{getStatusBadge(successResult.status)}</div>
-              </div>
-
-              {/* Core Attributes */}
-              <div className="bg-slate-950/80 border border-slate-800 rounded-xl p-4 space-y-2.5 text-xs font-mono">
-                <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
-                  <span className="text-slate-400 font-sans">Payment Reference:</span>
-                  <span className="font-bold text-white">{successResult.paymentReference}</span>
-                </div>
-
-                {successResult.utrNumber && (
-                  <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
-                    <span className="text-slate-400 font-sans">RBI Clearing UTR:</span>
-                    <span className="font-bold text-emerald-300">{successResult.utrNumber}</span>
-                  </div>
-                )}
-
-                {successResult.rrnNumber && (
-                  <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
-                    <span className="text-slate-400 font-sans">NPCI Switch RRN:</span>
-                    <span className="font-bold text-emerald-300">{successResult.rrnNumber}</span>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
-                  <span className="text-slate-400 font-sans">Settlement Rail:</span>
-                  <span className="font-semibold text-white font-sans">{successResult.railType} ({successResult.settlementBatchId})</span>
-                </div>
-
-                <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
-                  <span className="text-slate-400 font-sans">Beneficiary:</span>
-                  <span className="font-semibold text-white font-sans">{successResult.beneficiaryName}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-1 border-b border-slate-800/60">
-                  <span className="text-slate-400 font-sans">Destination Account:</span>
-                  <span className="text-slate-300">{successResult.destinationAccountNumber} ({successResult.beneficiaryIfsc})</span>
-                </div>
-
-                <div className="flex justify-between items-center py-1">
-                  <span className="text-slate-400 font-sans">Transfer Principal / Fee:</span>
-                  <span className="text-slate-300">
-                    ₹{successResult.amount?.toLocaleString('en-IN')} / ₹{successResult.fee?.toLocaleString('en-IN')}
-                  </span>
-                </div>
-              </div>
-
-              {/* Double-Entry Ledger Breakdown */}
-              <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-3.5 space-y-1.5 text-[11px] font-mono">
-                <div className="text-[10px] text-slate-400 uppercase font-sans font-bold mb-1">
-                  Balanced Double-Entry General Ledger Impact
-                </div>
-                <div className="flex justify-between text-rose-300">
-                  <span>DR {successResult.debitGLAccount || '2010-DEMAND-DEPOSITS-SAVINGS'}</span>
-                  <span>₹{successResult.totalDebited?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                </div>
-                <div className="flex justify-between text-emerald-300">
-                  <span>CR {successResult.creditGLAccount || '1040-RBI-RESERVE-BALANCE'}</span>
-                  <span>₹{successResult.amount?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                </div>
-                {successResult.fee > 0 && (
-                  <div className="flex justify-between text-emerald-300">
-                    <span>CR 4020-FEE-COMMISSION-INCOME</span>
-                    <span>₹{successResult.fee?.toLocaleString('en-IN', { minimumFractionDigits: 2 })}</span>
-                  </div>
-                )}
-              </div>
-
-              <div className="text-[11px] text-slate-400 bg-slate-950/40 p-3 rounded-lg border border-slate-800/80 leading-relaxed">
-                <span className="font-semibold text-slate-300">Simulation Note: </span>
-                {successResult.simulationNotes}
-              </div>
-
-              <button
-                onClick={() => setSuccessResult(null)}
-                className="w-full py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 font-bold text-white transition-colors"
-              >
-                Close Advice
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Simulated Reconciliation Modal */}
-      {reconcilingRecord && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-emerald-500/40 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
-            <div className="bg-emerald-950/60 px-6 py-4 flex items-center justify-between border-b border-emerald-900/60">
-              <div className="flex items-center gap-2">
-                <Clock className="h-5 w-5 text-emerald-400" />
-                <h3 className="font-bold text-white text-base">Simulate Clearing Reconciliation</h3>
-              </div>
-              <button
-                onClick={() => setReconcilingRecord(null)}
-                className="text-slate-400 hover:text-white transition-colors"
-              >
-                <X className="h-5 w-5" />
-              </button>
-            </div>
-
-            <div className="p-6 space-y-4 text-xs">
-              <div className="p-3 bg-slate-950 rounded-lg border border-slate-800 space-y-1">
-                <div>
-                  <span className="text-slate-400">Payment Ref: </span>
-                  <span className="font-bold text-white font-mono">{reconcilingRecord.paymentReference}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400">Current Status: </span>
-                  <span className="font-bold text-amber-300">{reconcilingRecord.status}</span>
-                </div>
-                <div>
-                  <span className="text-slate-400">Amount: </span>
-                  <span className="font-mono text-emerald-400 font-bold">
-                    ₹{reconcilingRecord.amount?.toLocaleString('en-IN')}
-                  </span>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Target Reconciliation Outcome</label>
-                <div className="grid grid-cols-2 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => setReconcileAction('SETTLED')}
-                    className={`p-2.5 rounded-lg border font-bold text-xs ${
-                      reconcileAction === 'SETTLED'
-                        ? 'bg-emerald-900/60 border-emerald-500 text-emerald-300 ring-1 ring-emerald-500'
-                        : 'bg-slate-950 border-slate-800 text-slate-400'
-                    }`}
-                  >
-                    Confirm Settlement (SETTLED)
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setReconcileAction('FAILED')}
-                    className={`p-2.5 rounded-lg border font-bold text-xs ${
-                      reconcileAction === 'FAILED'
-                        ? 'bg-rose-900/60 border-rose-500 text-rose-300 ring-1 ring-rose-500'
-                        : 'bg-slate-950 border-slate-800 text-slate-400'
-                    }`}
-                  >
-                    Clearing Failure & Refund (FAILED)
-                  </button>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-300 font-semibold mb-1">Reconciliation Audit Remarks</label>
-                <textarea
-                  value={reconcileRemarks}
-                  onChange={(e) => setReconcileRemarks(e.target.value)}
-                  rows={2}
-                  className="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                />
-              </div>
-
-              <div className="flex items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setReconcilingRecord(null)}
-                  className="flex-1 py-2.5 rounded-lg border border-slate-700 text-slate-300 hover:bg-slate-800 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  disabled={isReconciling}
-                  onClick={handleSimulateReconcile}
-                  className="flex-1 py-2.5 rounded-lg bg-emerald-700 hover:bg-emerald-600 text-white font-bold transition-colors disabled:opacity-50"
-                >
-                  {isReconciling ? 'Updating...' : 'Commit Reconciliation'}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
