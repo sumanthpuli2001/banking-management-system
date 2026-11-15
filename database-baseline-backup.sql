@@ -2,7 +2,7 @@
 -- APEX NATIONAL BANK (BMS v2.4) - DATABASE BASELINE BACKUP
 -- Created for Phase 1 Safety Audit
 -- Host: TiDB Cloud Serverless (enterprise_bank_db)
--- Timestamp: Sun Nov 15 15:25:32 IST 2026
+-- Timestamp: Sun Nov 15 15:37:55 IST 2026
 -- =====================================================
 
 -- Table structure for table: account_status_history
@@ -135,6 +135,48 @@ CREATE TABLE `aml_rule_configs` (
   UNIQUE KEY `idx_aml_rule_code` (`rule_code`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=30001;
 
+-- Table structure for table: approval_audit_logs
+CREATE TABLE `approval_audit_logs` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `action` varchar(40) NOT NULL,
+  `approval_request_id` bigint NOT NULL,
+  `notes` varchar(500) DEFAULT NULL,
+  `performed_by_role` varchar(50) DEFAULT NULL,
+  `performed_by_username` varchar(50) NOT NULL,
+  `recorded_at` datetime NOT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- Table structure for table: approval_matrix_rules
+CREATE TABLE `approval_matrix_rules` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `auto_escalate_after_hours` int DEFAULT NULL,
+  `description` varchar(300) DEFAULT NULL,
+  `escalate_to_role` varchar(50) DEFAULT NULL,
+  `expiry_hours` int NOT NULL,
+  `is_active` bit(1) NOT NULL,
+  `is_self_approval_allowed` bit(1) NOT NULL,
+  `max_amount` decimal(18,2) DEFAULT NULL,
+  `min_amount` decimal(18,2) DEFAULT NULL,
+  `operation_type` varchar(50) NOT NULL,
+  `required_checker_role` varchar(50) NOT NULL,
+  `risk_category` varchar(20) NOT NULL,
+  `rule_code` varchar(50) NOT NULL,
+  `rule_name` varchar(100) NOT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
+  UNIQUE KEY `UK52g50waqcw90iyjhjj4ykqea6` (`rule_code`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=30001;
+
 -- Table structure for table: approval_requests
 CREATE TABLE `approval_requests` (
   `id` bigint NOT NULL AUTO_INCREMENT,
@@ -156,6 +198,15 @@ CREATE TABLE `approval_requests` (
   `branch_id` bigint DEFAULT NULL,
   `checker_id` bigint DEFAULT NULL,
   `maker_id` bigint NOT NULL,
+  `delegated_to_username` varchar(50) DEFAULT NULL,
+  `escalated_at` datetime(6) DEFAULT NULL,
+  `escalated_to_role` varchar(50) DEFAULT NULL,
+  `expires_at` datetime DEFAULT NULL,
+  `is_escalated` bit(1) NOT NULL,
+  `rejection_reason` varchar(255) DEFAULT NULL,
+  `required_role` varchar(50) DEFAULT NULL,
+  `risk_level` varchar(20) DEFAULT NULL,
+  `rule_code` varchar(50) DEFAULT NULL,
   PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */,
   KEY `FK4dl7w8orf87h87l8y3gkkkg3h` (`branch_id`),
   KEY `FK1hebplryj0b4rhri36fvtikk6` (`checker_id`),
@@ -1204,7 +1255,7 @@ CREATE TABLE `transactions` (
   `reference_number` varchar(64) NOT NULL,
   `status` enum('FAILED','INITIATED','PENDING_APPROVAL','POSTED','PROCESSING','RECONCILED','REVERSED','SETTLED','SUCCESS','VALIDATING') NOT NULL,
   `transaction_timestamp` datetime NOT NULL,
-  `transaction_type` enum('CASH_DEPOSIT','CASH_WITHDRAWAL','EMI_REPAYMENT','FD_CREATION','INTERBANK_TRANSFER','INTEREST_CREDIT','INTERNAL_TRANSFER','LOAN_DISBURSEMENT') NOT NULL,
+  `transaction_type` enum('CASH_DEPOSIT','CASH_WITHDRAWAL','EMI_REPAYMENT','FD_CREATION','FD_MATURITY_PAYOUT','FD_PREMATURE_WITHDRAWAL','INTERBANK_TRANSFER','INTEREST_CREDIT','INTERNAL_TRANSFER','LOAN_DISBURSEMENT','RD_CREATION') NOT NULL,
   `branch_id` bigint DEFAULT NULL,
   `destination_account_id` bigint DEFAULT NULL,
   `initiated_by_user_id` bigint DEFAULT NULL,

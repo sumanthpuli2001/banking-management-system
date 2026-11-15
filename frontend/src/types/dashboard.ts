@@ -41,6 +41,13 @@ export interface HeadOfficeDashboardSummary {
   todayWithdrawals: number;
   netDailyClearing: number;
   reserveLiquidityRatio: number;
+  crrPercentage?: number;
+  slrPercentage?: number;
+  crrCompliant?: boolean;
+  slrCompliant?: boolean;
+  grossNpaRatio?: number;
+  totalNpaAmount?: number;
+  totalTermDepositsAmount?: number;
   totalBranches: number;
   totalRegionalOffices: number;
   totalActiveCustomers: number;
@@ -51,8 +58,41 @@ export interface HeadOfficeDashboardSummary {
   pendingFundTransferApprovals: number;
   pendingAccountApprovals: number;
   suspiciousTransactionAlerts: number;
+  pendingMakerCheckerCount?: number;
+  escalatedMakerCheckerCount?: number;
+  activeAmlAlertsCount?: number;
+  eodStatus?: string;
+  eodLastRunDate?: string;
   branchPerformance: BranchPerformance[];
   monthlyFinancialTrends: MonthlyTrend[];
   transactionVolumeAnalytics: TransactionVolume[];
   recentBankingActivities: RecentActivity[];
+}
+
+export interface EodBatchStep {
+  id: number;
+  batchRunId: number;
+  stepNumber: number;
+  stepCode: string;
+  stepName: string;
+  status: string;
+  durationMs: number;
+  details: string;
+  executedAt: string;
+}
+
+export interface EodBatchRun {
+  id: number;
+  batchDate: string;
+  batchType: string;
+  status: string;
+  branchCountVerified: number;
+  unbalancedEntriesCount: number;
+  interestAccrualTotal: number;
+  regulatoryReserveCalculated: boolean;
+  initiatedBy: string;
+  summaryNotes: string;
+  startedAt: string;
+  completedAt?: string;
+  steps: EodBatchStep[];
 }

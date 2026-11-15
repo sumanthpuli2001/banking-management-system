@@ -19,6 +19,15 @@ public class HeadOfficeDashboardDto {
     private BigDecimal netDailyClearing;
     private BigDecimal reserveLiquidityRatio;
 
+    // Regulatory & Asset Quality Health
+    private BigDecimal crrPercentage;
+    private BigDecimal slrPercentage;
+    private Boolean crrCompliant;
+    private Boolean slrCompliant;
+    private BigDecimal grossNpaRatio;
+    private BigDecimal totalNpaAmount;
+    private BigDecimal totalTermDepositsAmount;
+
     // Operational Counters
     private long totalBranches;
     private long totalRegionalOffices;
@@ -32,6 +41,13 @@ public class HeadOfficeDashboardDto {
     private long pendingFundTransferApprovals;
     private long pendingAccountApprovals;
     private long suspiciousTransactionAlerts;
+    private long pendingMakerCheckerCount;
+    private long escalatedMakerCheckerCount;
+    private long activeAmlAlertsCount;
+
+    // EOD Batch Status
+    private String eodStatus;
+    private String eodLastRunDate;
 
     // Comparative Analytics
     private List<BranchPerformanceDto> branchPerformance;
