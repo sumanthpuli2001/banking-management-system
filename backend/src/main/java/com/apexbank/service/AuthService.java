@@ -33,10 +33,10 @@ public class AuthService {
     private final AuditService auditService;
 
     @Value("${banking.security.max-failed-attempts:5}")
-    private int maxFailedAttempts;
+    private int maxFailedAttempts = 5;
 
     @Value("${banking.security.lockout-duration-minutes:15}")
-    private int lockoutDurationMinutes;
+    private int lockoutDurationMinutes = 15;
 
     public AuthService(AuthenticationManager authenticationManager,
                        UserRepository userRepository,

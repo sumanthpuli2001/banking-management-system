@@ -2,7 +2,7 @@
 -- APEX NATIONAL BANK (BMS v2.4) - DATABASE BASELINE BACKUP
 -- Created for Phase 1 Safety Audit
 -- Host: TiDB Cloud Serverless (enterprise_bank_db)
--- Timestamp: Sun Nov 15 15:37:55 IST 2026
+-- Timestamp: Sun Nov 15 15:51:12 IST 2026
 -- =====================================================
 
 -- Table structure for table: account_status_history
@@ -557,6 +557,47 @@ CREATE TABLE `employees` (
   CONSTRAINT `FKj5dawmyfw3dmtixnsrr6cbk63` FOREIGN KEY (`reporting_manager_id`) REFERENCES `employees` (`id`),
   CONSTRAINT `FK69x3vjuy1t5p18a5llb8h2fjx` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin AUTO_INCREMENT=30001;
+
+-- Table structure for table: eod_batch_runs
+CREATE TABLE `eod_batch_runs` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `batch_date` date NOT NULL,
+  `batch_type` varchar(20) NOT NULL,
+  `branch_count_verified` int DEFAULT NULL,
+  `completed_at` datetime DEFAULT NULL,
+  `initiated_by` varchar(50) DEFAULT NULL,
+  `interest_accrual_total` decimal(18,2) DEFAULT NULL,
+  `regulatory_reserve_calculated` bit(1) DEFAULT NULL,
+  `started_at` datetime NOT NULL,
+  `status` varchar(30) NOT NULL,
+  `summary_notes` varchar(500) DEFAULT NULL,
+  `unbalanced_entries_count` int DEFAULT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
+
+-- Table structure for table: eod_batch_steps
+CREATE TABLE `eod_batch_steps` (
+  `id` bigint NOT NULL AUTO_INCREMENT,
+  `created_at` datetime NOT NULL,
+  `created_by` varchar(255) DEFAULT NULL,
+  `updated_at` datetime DEFAULT NULL,
+  `updated_by` varchar(255) DEFAULT NULL,
+  `version` bigint DEFAULT NULL,
+  `batch_run_id` bigint NOT NULL,
+  `details` varchar(500) DEFAULT NULL,
+  `duration_ms` bigint DEFAULT NULL,
+  `executed_at` datetime DEFAULT NULL,
+  `status` varchar(30) NOT NULL,
+  `step_code` varchar(60) NOT NULL,
+  `step_name` varchar(100) NOT NULL,
+  `step_number` int NOT NULL,
+  PRIMARY KEY (`id`) /*T![clustered_index] CLUSTERED */
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
 
 -- Table structure for table: fixed_deposits
 CREATE TABLE `fixed_deposits` (
