@@ -249,7 +249,7 @@ export const CustomerManagementPage: React.FC = () => {
                         c.riskCategory === 'LOW'
                           ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           : c.riskCategory === 'MEDIUM'
-                          ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                          ? 'bg-teal-50 text-teal-800 border border-teal-200'
                           : 'bg-rose-50 text-rose-800 border border-rose-200'
                       }`}
                     >
@@ -261,7 +261,7 @@ export const CustomerManagementPage: React.FC = () => {
                       className={`inline-flex items-center space-x-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                         c.kycStatus === 'VERIFIED'
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                          : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          : 'bg-teal-50 text-teal-700 border border-teal-200'
                       }`}
                     >
                       <CheckCircle2 className="w-3 h-3" />

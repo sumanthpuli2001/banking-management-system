@@ -182,7 +182,7 @@ export const TermDepositPage: React.FC = () => {
 
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4">
           <div className="text-xs font-medium text-slate-400">Benchmark Card Rate</div>
-          <div className="text-xl font-bold font-mono text-amber-400 mt-1">7.25% p.a.</div>
+          <div className="text-xl font-bold font-mono text-emerald-400 mt-1">7.25% p.a.</div>
           <div className="text-[11px] text-slate-500 mt-1">+0.50% Senior Citizen booster</div>
         </div>
       </div>
@@ -191,7 +191,7 @@ export const TermDepositPage: React.FC = () => {
       <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4">
         <div className="flex items-center justify-between border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2">
-            <Calculator className="h-5 w-5 text-amber-400" />
+            <Calculator className="h-5 w-5 text-emerald-400" />
             <h3 className="text-sm font-bold text-white">Institutional Term Deposit Yield Simulator</h3>
           </div>
           <div className="flex items-center gap-2">
@@ -202,7 +202,7 @@ export const TermDepositPage: React.FC = () => {
                 onChange={(e) => setIsSeniorCitizen(e.target.checked)}
                 className="rounded border-slate-700 bg-slate-950 text-blue-600 focus:ring-0"
               />
-              <span className="text-amber-300 font-semibold">Senior Citizen (+0.50%)</span>
+              <span className="text-emerald-300 font-semibold">Senior Citizen (+0.50%)</span>
             </label>
           </div>
         </div>
@@ -247,7 +247,7 @@ export const TermDepositPage: React.FC = () => {
             </div>
             <div className="text-right text-xs">
               <div className="text-slate-400">Net Interest:</div>
-              <div className="font-bold font-mono text-amber-400">
+              <div className="font-bold font-mono text-emerald-400">
                 +₹{calcResult.interest.toLocaleString('en-IN')}
               </div>
             </div>
@@ -315,7 +315,7 @@ export const TermDepositPage: React.FC = () => {
                       ₹{item.principalAmount?.toLocaleString('en-IN')}
                     </td>
                     <td className="px-5 py-4">
-                      <span className="font-mono font-semibold text-amber-400 bg-amber-950/40 border border-amber-800/50 px-2 py-0.5 rounded text-[11px]">
+                      <span className="font-mono font-semibold text-emerald-400 bg-emerald-950/40 border border-emerald-800/50 px-2 py-0.5 rounded text-[11px]">
                         {item.interestRate}% p.a.
                       </span>
                     </td>
@@ -468,11 +468,11 @@ export const TermDepositPage: React.FC = () => {
       {/* Official Certificate Modal */}
       {selectedCertificate && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fadeIn">
-          <div className="bg-slate-900 border border-amber-600/50 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
+          <div className="bg-slate-900 border border-emerald-600/50 rounded-2xl w-full max-w-2xl overflow-hidden shadow-2xl">
             {/* Header */}
             <div className="bg-slate-800 px-6 py-4 flex items-center justify-between border-b border-slate-700">
               <div className="flex items-center gap-2">
-                <Award className="h-5 w-5 text-amber-400" />
+                <Award className="h-5 w-5 text-emerald-400" />
                 <h3 className="font-bold text-white text-base">Certificate of Term Deposit</h3>
               </div>
               <button
@@ -484,9 +484,9 @@ export const TermDepositPage: React.FC = () => {
             </div>
 
             {/* Certificate Paper */}
-            <div className="p-8 space-y-6 bg-slate-950 text-slate-300 border-4 border-double border-amber-600/30 m-4 rounded-xl">
+            <div className="p-8 space-y-6 bg-slate-950 text-slate-300 border-4 border-double border-emerald-600/30 m-4 rounded-xl">
               <div className="text-center space-y-1 border-b border-dashed border-slate-800 pb-4">
-                <div className="text-xl font-bold tracking-widest text-amber-400 uppercase font-serif">
+                <div className="text-xl font-bold tracking-widest text-emerald-400 uppercase font-serif">
                   APEX BANK OF INDIA
                 </div>
                 <div className="text-xs text-slate-400 uppercase tracking-wider">
@@ -525,7 +525,7 @@ export const TermDepositPage: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-[11px] text-slate-400">Rate of Interest</span>
-                  <div className="text-base font-bold font-mono text-amber-400 mt-1">
+                  <div className="text-base font-bold font-mono text-emerald-400 mt-1">
                     {selectedCertificate.interestRate}% p.a.
                   </div>
                 </div>
@@ -571,7 +571,7 @@ export const TermDepositPage: React.FC = () => {
             <div className="bg-slate-800/80 px-6 py-4 flex gap-3 border-t border-slate-700">
               <button
                 onClick={() => window.print()}
-                className="flex-1 py-2 px-4 bg-amber-600 hover:bg-amber-500 text-white font-semibold rounded-lg text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
+                className="flex-1 py-2 px-4 bg-emerald-700 hover:bg-emerald-600 text-white font-semibold rounded-lg text-xs flex items-center justify-center gap-2 transition-all shadow-sm"
               >
                 <Printer className="h-4 w-4" /> Print Certificate
               </button>

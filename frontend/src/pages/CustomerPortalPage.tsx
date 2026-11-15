@@ -210,26 +210,26 @@ export const CustomerPortalPage: React.FC = () => {
         </div>
 
         {/* Term Deposit Card */}
-        <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-amber-900/40 rounded-2xl p-6 shadow-lg flex flex-col justify-between">
+        <div className="bg-gradient-to-br from-slate-900 to-slate-950 border border-emerald-900/40 rounded-2xl p-6 shadow-lg flex flex-col justify-between">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <PiggyBank className="h-5 w-5 text-amber-400" />
-              <span className="font-bold text-xs uppercase tracking-wider text-amber-300">
+              <PiggyBank className="h-5 w-5 text-emerald-400" />
+              <span className="font-bold text-xs uppercase tracking-wider text-emerald-300">
                 Fixed Deposit (FD)
               </span>
             </div>
-            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-amber-950 text-amber-400 border border-amber-800/60">
+            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-950 text-emerald-400 border border-emerald-800/60">
               7.25% p.a.
             </span>
           </div>
 
           <div className="my-6">
             <div className="text-xs text-slate-400 mb-1">Principal Invested</div>
-            <div className="text-3xl font-bold font-mono text-amber-400 tracking-tight">
+            <div className="text-3xl font-bold font-mono text-emerald-400 tracking-tight">
               ₹2,00,000.00
             </div>
             <div className="text-xs text-slate-400 mt-2">
-              Maturity Value: <span className="font-mono font-bold text-emerald-400">₹2,31,048.00</span>
+              Maturity Value: <span className="font-mono font-bold text-emerald-300">₹2,31,048.00</span>
             </div>
           </div>
 
@@ -259,7 +259,7 @@ export const CustomerPortalPage: React.FC = () => {
               ₹44,52,180.00
             </div>
             <div className="text-xs text-slate-400 mt-2">
-              Monthly Installment: <span className="font-mono font-bold text-amber-400">₹44,986.00</span>
+              Monthly Installment: <span className="font-mono font-bold text-teal-300">₹44,986.00</span>
             </div>
           </div>
 

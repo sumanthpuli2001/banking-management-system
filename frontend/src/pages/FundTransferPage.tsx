@@ -340,11 +340,11 @@ export const FundTransferPage: React.FC = () => {
 
               {/* High-Value Maker-Checker Alert Banner */}
               {isHighValue && (
-                <div className="bg-amber-950/40 border border-amber-800/60 rounded-lg p-3.5 flex items-start gap-3 text-xs text-amber-300">
-                  <AlertTriangle className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                <div className="bg-emerald-950/40 border border-emerald-800/60 rounded-lg p-3.5 flex items-start gap-3 text-xs text-emerald-300">
+                  <AlertTriangle className="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" />
                   <div>
-                    <span className="font-bold text-amber-200">Dual-Control Maker-Checker Safeguard Activated:</span>
-                    <p className="mt-0.5 text-amber-300/90 leading-relaxed">
+                    <span className="font-bold text-emerald-200">Dual-Control Maker-Checker Safeguard Activated:</span>
+                    <p className="mt-0.5 text-emerald-300/90 leading-relaxed">
                       Transactions exceeding ₹5,00,000 will be routed to the <strong>Maker-Checker Approval Hub</strong>.
                       The debit will be authorized and settled once a designated Branch Manager or Head Office Officer reviews and approves the request.
                     </p>
@@ -358,8 +358,8 @@ export const FundTransferPage: React.FC = () => {
               disabled={isSubmitting || !sourceAccount}
               className={`w-full py-3.5 px-4 rounded-lg font-bold text-sm text-white shadow-lg transition-all flex items-center justify-center gap-2 ${
                 isHighValue
-                  ? 'bg-amber-600 hover:bg-amber-500 shadow-amber-900/40'
-                  : 'bg-blue-600 hover:bg-blue-500 shadow-blue-900/40'
+                  ? 'bg-emerald-700 hover:bg-emerald-600 shadow-emerald-900/40'
+                  : 'bg-emerald-800 hover:bg-emerald-700 shadow-emerald-900/40'
               }`}
             >
               {isSubmitting ? (

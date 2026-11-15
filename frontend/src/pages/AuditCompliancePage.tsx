@@ -402,7 +402,7 @@ export const AuditCompliancePage: React.FC = () => {
       {activeTab === 'AML_SURVEILLANCE' && (
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-6 space-y-5">
           <div className="flex items-center gap-3 border-b border-slate-800 pb-4">
-            <AlertTriangle className="h-6 w-6 text-amber-400" />
+            <AlertTriangle className="h-6 w-6 text-rose-500" />
             <div>
               <h3 className="text-base font-bold text-white">FinCEN & RBI High-Value Surveillance Engine</h3>
               <p className="text-xs text-slate-400 mt-0.5">

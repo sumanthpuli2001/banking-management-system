@@ -396,7 +396,7 @@ export const CashierDeskPage: React.FC = () => {
                   />
                 </div>
                 {amount >= 50000 && (
-                  <p className="text-[11px] text-amber-400 mt-1 flex items-center gap-1">
+                  <p className="text-[11px] text-teal-400 mt-1 flex items-center gap-1">
                     <AlertCircle className="h-3 w-3 shrink-0" />
                     PAN declaration mandatory for transactions ≥ ₹50,000
                   </p>
@@ -409,7 +409,7 @@ export const CashierDeskPage: React.FC = () => {
                   type="text"
                   value={narration}
                   onChange={(e) => setNarration(e.target.value)}
-                  className="w-full bg-slate-950/70 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full bg-slate-950/70 border border-slate-700 rounded-lg px-4 py-2.5 text-white text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="e.g. Counter Cash Deposit"
                 />
               </div>
@@ -448,7 +448,7 @@ export const CashierDeskPage: React.FC = () => {
           <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-5 space-y-4">
             <div className="flex items-center justify-between border-b border-slate-800 pb-3">
               <div className="flex items-center gap-2">
-                <Calculator className="h-5 w-5 text-amber-400" />
+                <Calculator className="h-5 w-5 text-emerald-400" />
                 <h3 className="text-sm font-bold text-white">Physical Note Denominations</h3>
               </div>
               <button
@@ -485,10 +485,10 @@ export const CashierDeskPage: React.FC = () => {
                       value={count || ''}
                       onChange={(e) => handleDenomChange(denom as keyof DenominationCount, e.target.value)}
                       placeholder="0"
-                      className="w-24 bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-center font-mono font-bold text-white focus:outline-none focus:ring-1 focus:ring-amber-500"
+                      className="w-24 bg-slate-900 border border-slate-700 rounded px-2.5 py-1 text-center font-mono font-bold text-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
                     />
 
-                    <div className="w-28 text-right font-mono font-semibold text-amber-400">
+                    <div className="w-28 text-right font-mono font-semibold text-emerald-400">
                       = ₹{subtotal.toLocaleString('en-IN')}
                     </div>
                   </div>

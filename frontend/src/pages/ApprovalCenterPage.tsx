@@ -160,10 +160,10 @@ export const ApprovalCenterPage: React.FC = () => {
           <div className="flex items-center space-x-2 text-xs font-bold uppercase tracking-wider text-slate-500 font-mono">
             <span>Governance & Dual Authorization</span>
             <span>•</span>
-            <span className="text-amber-700 font-semibold">Maker-Checker Portal</span>
+            <span className="text-emerald-700 font-semibold">Maker-Checker Portal</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mt-1 flex items-center gap-3">
-            <ShieldCheck className="h-7 w-7 text-amber-600 shrink-0" />
+            <ShieldCheck className="h-7 w-7 text-emerald-600 shrink-0" />
             Centralized Dual-Control Approval Hub
           </h1>
           <p className="text-xs text-slate-500 mt-1">
@@ -175,7 +175,7 @@ export const ApprovalCenterPage: React.FC = () => {
           onClick={fetchApprovals}
           className="px-4 py-2.5 bg-white hover:bg-slate-50 text-slate-700 font-semibold rounded-xl text-xs flex items-center gap-2 border border-slate-200 shadow-sm transition-all self-start sm:self-auto"
         >
-          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-amber-600' : ''}`} /> Refresh Queue
+          <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin text-emerald-600' : ''}`} /> Refresh Queue
         </button>
       </div>
 
@@ -183,8 +183,8 @@ export const ApprovalCenterPage: React.FC = () => {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Pending Authorization</p>
-          <p className="text-2xl font-black text-amber-700 mt-1 font-sans">{pendingCount}</p>
-          <span className="text-[10px] text-amber-600 font-medium">Awaiting checker sign-off</span>
+          <p className="text-2xl font-black text-emerald-700 mt-1 font-sans">{pendingCount}</p>
+          <span className="text-[10px] text-emerald-600 font-medium">Awaiting checker sign-off</span>
         </div>
         <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
           <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Approved Today</p>
@@ -197,7 +197,7 @@ export const ApprovalCenterPage: React.FC = () => {
           <span className="text-[10px] text-rose-600 font-medium">Returned with remarks</span>
         </div>
         <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-sm border border-slate-800">
-          <p className="text-[10px] font-bold text-amber-400 uppercase font-mono">Active Checker Role</p>
+          <p className="text-[10px] font-bold text-emerald-400 uppercase font-mono">Active Checker Role</p>
           <p className="text-lg font-black text-white mt-1 font-sans truncate">{user?.roles?.[0] || 'CHECKER'}</p>
           <span className="text-[10px] text-slate-400 truncate block">{user?.fullName}</span>
         </div>
@@ -234,7 +234,7 @@ export const ApprovalCenterPage: React.FC = () => {
               setCurrentPage(1);
             }}
             placeholder="Search by ref #, maker, or type..."
-            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500 shadow-sm font-sans"
+            className="w-full bg-white border border-slate-200 rounded-xl pl-10 pr-4 py-2 text-xs text-slate-900 placeholder-slate-400 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 shadow-sm font-sans"
           />
         </div>
       </div>
@@ -258,7 +258,7 @@ export const ApprovalCenterPage: React.FC = () => {
               {loading ? (
                 <tr>
                   <td colSpan={7} className="px-5 py-10 text-center text-slate-500">
-                    <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-amber-600" />
+                    <RefreshCw className="h-5 w-5 animate-spin mx-auto mb-2 text-emerald-600" />
                     Loading maker-checker requests...
                   </td>
                 </tr>
@@ -270,10 +270,10 @@ export const ApprovalCenterPage: React.FC = () => {
                 </tr>
               ) : (
                 paginatedItems.map((item) => (
-                  <tr key={item.id} className="hover:bg-amber-50/20 transition-colors">
+                  <tr key={item.id} className="hover:bg-emerald-50/20 transition-colors">
                     <td className="px-5 py-4">
                       <div className="font-bold text-slate-900 text-xs font-mono">{item.requestType}</div>
-                      <div className="font-mono text-amber-700 text-[11px] mt-0.5">
+                      <div className="font-mono text-emerald-700 text-[11px] mt-0.5">
                         {item.referenceId || `REQ-${item.id}`}
                       </div>
                     </td>
@@ -299,7 +299,7 @@ export const ApprovalCenterPage: React.FC = () => {
                             ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
                             : item.status === 'REJECTED'
                             ? 'bg-rose-50 text-rose-800 border-rose-200'
-                            : 'bg-amber-50 text-amber-900 border border-amber-300'
+                            : 'bg-teal-50 text-teal-900 border border-teal-300'
                         }`}
                       >
                         {item.status}
@@ -309,9 +309,9 @@ export const ApprovalCenterPage: React.FC = () => {
                       {item.status === 'PENDING' ? (
                         <button
                           onClick={() => handleOpenDecisionModal(item)}
-                          className="px-3.5 py-1.5 bg-slate-900 hover:bg-amber-600 text-white font-bold rounded-xl text-xs inline-flex items-center gap-1.5 shadow-sm transition-all"
+                          className="px-3.5 py-1.5 bg-emerald-800 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs inline-flex items-center gap-1.5 shadow-sm transition-all"
                         >
-                          <FileCheck className="h-3.5 w-3.5 text-amber-400" /> Review & Authorize
+                          <FileCheck className="h-3.5 w-3.5 text-emerald-300" /> Review & Authorize
                         </button>
                       ) : (
                         <button
@@ -345,7 +345,7 @@ export const ApprovalCenterPage: React.FC = () => {
           <div className="bg-white rounded-3xl w-full max-w-lg overflow-hidden shadow-2xl border border-slate-200">
             <div className="bg-slate-50 px-6 py-4 flex items-center justify-between border-b border-slate-200">
               <div className="flex items-center gap-2.5">
-                <ShieldCheck className="h-5 w-5 text-amber-600" />
+                <ShieldCheck className="h-5 w-5 text-emerald-600" />
                 <h3 className="font-extrabold text-slate-900 text-sm font-sans">Maker-Checker Authorization Dossier</h3>
               </div>
               <button
@@ -379,7 +379,7 @@ export const ApprovalCenterPage: React.FC = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-500">Ref ID:</span>
-                  <span className="text-amber-800 font-bold">{selectedRequest.referenceId || `REQ-${selectedRequest.id}`}</span>
+                  <span className="text-emerald-800 font-bold">{selectedRequest.referenceId || `REQ-${selectedRequest.id}`}</span>
                 </div>
                 {selectedRequest.amount && (
                   <div className="flex justify-between">
@@ -444,7 +444,7 @@ export const ApprovalCenterPage: React.FC = () => {
                       onChange={(e) => setRemarks(e.target.value)}
                       placeholder="Mandatory compliance remarks explaining decision..."
                       rows={3}
-                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 text-xs focus:outline-none focus:border-amber-500 focus:ring-1 focus:ring-amber-500"
+                      className="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 text-slate-900 text-xs focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500"
                       required
                     />
                   </div>
@@ -475,7 +475,7 @@ export const ApprovalCenterPage: React.FC = () => {
                   <div className="text-slate-500 font-bold uppercase tracking-wider font-mono">Recorded Checker Decision</div>
                   <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 text-slate-700 space-y-1.5 font-mono">
                     <div>Status: <span className="font-bold text-slate-900">{selectedRequest.status}</span></div>
-                    <div>Checker: <span className="font-bold text-amber-800">{selectedRequest.checkerName || 'Authorized Officer'}</span></div>
+                    <div>Checker: <span className="font-bold text-emerald-800">{selectedRequest.checkerName || 'Authorized Officer'}</span></div>
                     <div>Remarks: <span className="italic font-sans">{selectedRequest.checkerRemarks || 'None recorded'}</span></div>
                     <div>Timestamp: <span className="text-slate-500">{formatDate(selectedRequest.decidedAt)}</span></div>
                   </div>

@@ -15,7 +15,6 @@ import {
   ChevronRight,
   ChevronDown,
   Layers,
-  Sparkles,
   ShieldCheck
 } from 'lucide-react';
 
@@ -172,7 +171,7 @@ export const Sidebar: React.FC = () => {
               <button
                 type="button"
                 onClick={() => toggleSection(section.title)}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider text-slate-400 hover:text-amber-700 transition uppercase"
+                className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider text-slate-400 hover:text-emerald-800 transition uppercase"
               >
                 <span>{section.title}</span>
                 {isCollapsed ? (
@@ -194,8 +193,8 @@ export const Sidebar: React.FC = () => {
                         className={({ isActive }) =>
                           `group flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ${
                             isActive
-                              ? 'bg-gradient-to-r from-amber-500/15 via-amber-500/5 to-transparent text-amber-950 font-bold border-l-4 border-amber-600 shadow-sm'
-                              : 'text-slate-600 hover:text-amber-950 hover:bg-amber-50/60'
+                              ? 'bg-gradient-to-r from-emerald-600/15 via-emerald-600/5 to-transparent text-emerald-950 font-bold border-l-4 border-emerald-600 shadow-xs'
+                              : 'text-slate-600 hover:text-emerald-950 hover:bg-emerald-50/60'
                           }`
                         }
                       >
@@ -205,15 +204,15 @@ export const Sidebar: React.FC = () => {
                               <Icon
                                 className={`w-4 h-4 shrink-0 transition-colors ${
                                   isActive
-                                    ? 'text-amber-600'
-                                    : 'text-slate-400 group-hover:text-amber-700'
+                                    ? 'text-emerald-700'
+                                    : 'text-slate-400 group-hover:text-emerald-700'
                                 }`}
                               />
                               <span className="truncate">{item.name}</span>
                             </div>
 
                             {item.badge && (
-                              <span className="ml-2 px-1.5 py-0.5 text-[9px] font-mono font-bold rounded-full bg-amber-100 text-amber-800 border border-amber-300">
+                              <span className="ml-2 px-1.5 py-0.5 text-[9px] font-mono font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
                                 {item.badge}
                               </span>
                             )}
@@ -229,18 +228,18 @@ export const Sidebar: React.FC = () => {
         })}
       </div>
 
-      {/* Bottom Institutional Solvency Card */}
+      {/* Bottom Swiss Wealth Solvency Card */}
       <div className="p-3 border-t border-slate-100 bg-slate-50/70">
-        <div className="bg-gradient-to-br from-amber-50 to-orange-50/40 rounded-xl p-3 border border-amber-200/70 shadow-sm">
-          <div className="flex items-center justify-between text-[11px] font-bold text-amber-900 mb-1">
+        <div className="bg-gradient-to-br from-emerald-50 to-teal-50/40 rounded-xl p-3 border border-emerald-200/80 shadow-xs">
+          <div className="flex items-center justify-between text-[11px] font-bold text-emerald-950 mb-1">
             <span className="flex items-center space-x-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-amber-700" />
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
               <span>Capital Solvency</span>
             </span>
             <span className="text-[10px] font-mono font-extrabold text-emerald-700">100% OK</span>
           </div>
           <p className="text-[10px] text-slate-500 leading-tight">
-            Reserve Adequacy: 24.8% CRR/SLR. Full regulatory compliance active.
+            Reserve Adequacy: 24.8% CRR/SLR. Full Swiss tier solvency active.
           </p>
         </div>
       </div>

@@ -1,40 +1,39 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
   <defs>
-    <linearGradient id="goldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FDE68A"/>
-      <stop offset="35%" stop-color="#F59E0B"/>
-      <stop offset="70%" stop-color="#D97706"/>
-      <stop offset="100%" stop-color="#78350F"/>
+    <linearGradient id="emeraldPlate" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#6EE7B7"/>
+      <stop offset="35%" stop-color="#10B981"/>
+      <stop offset="70%" stop-color="#047857"/>
+      <stop offset="100%" stop-color="#064E3B"/>
     </linearGradient>
-    <linearGradient id="goldShine" x1="0%" y1="0%" x2="0%" y2="100%">
-      <stop offset="0%" stop-color="#FFFBEB"/>
-      <stop offset="50%" stop-color="#FBBF24"/>
-      <stop offset="100%" stop-color="#B45309"/>
+    <linearGradient id="emeraldShine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ECFDF5"/>
+      <stop offset="50%" stop-color="#34D399"/>
+      <stop offset="100%" stop-color="#059669"/>
     </linearGradient>
-    <linearGradient id="shieldBg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#1E293B"/>
-      <stop offset="100%" stop-color="#0F172A"/>
+    <linearGradient id="shieldBgEmerald" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0B382D"/>
+      <stop offset="100%" stop-color="#041E18"/>
     </linearGradient>
   </defs>
   
   <!-- Outer Shield Crest -->
-  <path d="M32 4L54 12V28C54 42 44.5 54 32 60C19.5 54 10 42 10 28V12L32 4Z" fill="url(#shieldBg)" stroke="url(#goldPlate)" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M32 4L54 12V28C54 42 44.5 54 32 60C19.5 54 10 42 10 28V12L32 4Z" fill="url(#shieldBgEmerald)" stroke="url(#emeraldPlate)" stroke-width="2.5" stroke-linejoin="round"/>
   
   <!-- Inner Neoclassical Bank Temple -->
-  <!-- Pediment (Triangular Gable) -->
-  <polygon points="32,15 46,23 18,23" fill="url(#goldShine)"/>
-  <rect x="16" y="23" width="32" height="2" rx="0.5" fill="url(#goldPlate)"/>
+  <polygon points="32,15 46,23 18,23" fill="url(#emeraldShine)"/>
+  <rect x="16" y="23" width="32" height="2" rx="0.5" fill="url(#emeraldPlate)"/>
   
   <!-- Classical Pillars (4 Columns) -->
-  <rect x="19" y="27" width="4" height="15" rx="1" fill="url(#goldPlate)"/>
-  <rect x="26" y="27" width="4" height="15" rx="1" fill="url(#goldPlate)"/>
-  <rect x="34" y="27" width="4" height="15" rx="1" fill="url(#goldPlate)"/>
-  <rect x="41" y="27" width="4" height="15" rx="1" fill="url(#goldPlate)"/>
+  <rect x="19" y="27" width="4" height="15" rx="1" fill="url(#emeraldPlate)"/>
+  <rect x="26" y="27" width="4" height="15" rx="1" fill="url(#emeraldPlate)"/>
+  <rect x="34" y="27" width="4" height="15" rx="1" fill="url(#emeraldPlate)"/>
+  <rect x="41" y="27" width="4" height="15" rx="1" fill="url(#emeraldPlate)"/>
   
-  <!-- Foundation Steps (Podium) -->
-  <rect x="16" y="43" width="32" height="2.5" rx="0.5" fill="url(#goldShine)"/>
-  <rect x="14" y="46.5" width="36" height="2.5" rx="0.5" fill="url(#goldPlate)"/>
+  <!-- Foundation Steps -->
+  <rect x="16" y="43" width="32" height="2.5" rx="0.5" fill="url(#emeraldShine)"/>
+  <rect x="14" y="46.5" width="36" height="2.5" rx="0.5" fill="url(#emeraldPlate)"/>
   
-  <!-- Central Star / Sovereign Seal -->
-  <circle cx="32" cy="19.5" r="1.5" fill="#FFFBEB"/>
+  <!-- Central Star -->
+  <circle cx="32" cy="19.5" r="1.5" fill="#ECFDF5"/>
 </svg>

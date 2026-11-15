@@ -290,7 +290,7 @@ export const BankAccountManagementPage: React.FC = () => {
                           ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
                           : a.status === 'FROZEN'
                           ? 'bg-rose-50 text-rose-700 border border-rose-200'
-                          : 'bg-amber-50 text-amber-700 border border-amber-200'
+                          : 'bg-slate-100 text-slate-700 border border-slate-200'
                       }`}
                     >
                       {a.status === 'ACTIVE' ? (

@@ -11,7 +11,7 @@ interface KpiCardProps {
     isPositive?: boolean;
     isNeutral?: boolean;
   };
-  accentColor?: 'gold' | 'green' | 'amber' | 'blue' | 'red' | 'navy';
+  accentColor?: 'emerald' | 'green' | 'teal' | 'blue' | 'red' | 'navy';
   isCurrency?: boolean;
 }
 
@@ -21,25 +21,25 @@ export const KpiCard: React.FC<KpiCardProps> = ({
   subtitle,
   icon: Icon,
   trend,
-  accentColor = 'gold',
+  accentColor = 'emerald',
   isCurrency = false,
 }) => {
   const borderTopMap = {
-    gold: 'border-t-4 border-t-amber-500',
+    emerald: 'border-t-4 border-t-emerald-600',
     green: 'border-t-4 border-t-emerald-500',
-    amber: 'border-t-4 border-t-amber-600',
+    teal: 'border-t-4 border-t-teal-600',
     blue: 'border-t-4 border-t-slate-800',
     red: 'border-t-4 border-t-rose-500',
     navy: 'border-t-4 border-t-slate-900',
   };
 
   const iconBgMap = {
-    gold: 'bg-amber-50 text-amber-700 border border-amber-200/60',
+    emerald: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
     green: 'bg-emerald-50 text-emerald-700 border border-emerald-200/60',
-    amber: 'bg-orange-50 text-orange-700 border border-orange-200/60',
+    teal: 'bg-teal-50 text-teal-700 border border-teal-200/60',
     blue: 'bg-slate-100 text-slate-800 border border-slate-200',
     red: 'bg-rose-50 text-rose-700 border border-rose-200/60',
-    navy: 'bg-slate-900 text-amber-400 border border-slate-800',
+    navy: 'bg-slate-900 text-emerald-400 border border-slate-800',
   };
 
   const formattedValue = isCurrency && typeof value === 'number'
@@ -51,7 +51,7 @@ export const KpiCard: React.FC<KpiCardProps> = ({
     : value;
 
   return (
-    <div className={`bg-white rounded-2xl p-5 border border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] ${borderTopMap[accentColor]} hover:shadow-lg hover:border-amber-300/60 transition-all duration-300 overflow-hidden flex flex-col justify-between`}>
+    <div className={`bg-white rounded-2xl p-5 border border-slate-200/90 shadow-[0_2px_12px_-4px_rgba(0,0,0,0.04)] ${borderTopMap[accentColor]} hover:shadow-lg hover:border-emerald-300/60 transition-all duration-300 overflow-hidden flex flex-col justify-between`}>
       {/* Top Row: Title + Icon Badge neatly inline with zero overflow */}
       <div className="flex items-center justify-between gap-3 mb-2">
         <p className="text-[11px] font-bold tracking-wider uppercase text-slate-400 font-mono truncate">

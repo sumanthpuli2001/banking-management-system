@@ -202,7 +202,7 @@ export const HeadOfficeDashboardPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 border-b border-slate-200">
         <div>
           <div className="flex items-center space-x-2.5">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-amber-50 text-amber-900 border border-amber-300">
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-900 border border-emerald-300">
               CENTRAL HEAD OFFICE OVERVIEW
             </span>
             <span className="text-xs text-slate-400 font-mono">FINANCIAL YEAR 2026-27</span>
@@ -221,7 +221,7 @@ export const HeadOfficeDashboardPage: React.FC = () => {
 
         <div className="flex items-center space-x-3">
           <div className="flex items-center space-x-2 bg-white border border-slate-200 rounded-xl px-3 py-2 text-xs shadow-sm">
-            <Filter className="w-3.5 h-3.5 text-amber-700" />
+            <Filter className="w-3.5 h-3.5 text-emerald-700" />
             <span className="text-slate-500 font-medium">Zone:</span>
             <select
               value={selectedRegion}
@@ -238,16 +238,16 @@ export const HeadOfficeDashboardPage: React.FC = () => {
           <button
             onClick={fetchDashboardData}
             title="Refresh Live Ledgers"
-            className="p-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-amber-50/50 hover:text-amber-900 hover:border-amber-300 shadow-sm transition"
+            className="p-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-emerald-50/50 hover:text-emerald-900 hover:border-emerald-300 shadow-sm transition"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-amber-600' : ''}`} />
+            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-emerald-600' : ''}`} />
           </button>
 
           <button
             title="Export Regulatory Report"
-            className="flex items-center space-x-2 px-4 py-2.5 bg-slate-900 hover:bg-amber-600 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all duration-200 border border-slate-800"
+            className="flex items-center space-x-2 px-4 py-2.5 bg-emerald-800 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md hover:shadow-lg transition-all duration-200 border border-emerald-900"
           >
-            <Download className="w-3.5 h-3.5 text-amber-400" />
+            <Download className="w-3.5 h-3.5 text-emerald-300" />
             <span>Export Statement</span>
           </button>
         </div>
@@ -260,7 +260,7 @@ export const HeadOfficeDashboardPage: React.FC = () => {
           value={data.totalBankDeposits}
           subtitle="Cumulative savings, current & term deposits"
           icon={Landmark}
-          accentColor="gold"
+          accentColor="emerald"
           isCurrency={true}
           trend={{ value: '+8.4% YoY', isPositive: true }}
         />
@@ -287,7 +287,7 @@ export const HeadOfficeDashboardPage: React.FC = () => {
           value={data.todayWithdrawals}
           subtitle="Counter payouts & clearing settlements"
           icon={ArrowUpCircle}
-          accentColor="amber"
+          accentColor="teal"
           isCurrency={true}
           trend={{ value: 'Net +₹14.45 Cr Clearing', isNeutral: true }}
         />
@@ -295,42 +295,42 @@ export const HeadOfficeDashboardPage: React.FC = () => {
 
       {/* Secondary Operational Counters Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-amber-300 transition">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition">
           <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Active Branches</p>
           <p className="text-xl font-black text-slate-900 mt-1 font-sans">
             {data.totalBranches}
           </p>
           <span className="text-[10px] text-emerald-600 font-bold font-mono">100% ONLINE</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-amber-300 transition">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition">
           <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Regional Offices</p>
           <p className="text-xl font-black text-slate-900 mt-1 font-sans">
             {data.totalRegionalOffices}
           </p>
           <span className="text-[10px] text-slate-400 font-mono">Supervised</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-amber-300 transition">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition">
           <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Total Accounts</p>
           <p className="text-xl font-black text-slate-900 mt-1 font-sans">
             {data.totalActiveAccounts.toLocaleString('en-IN')}
           </p>
           <span className="text-[10px] text-emerald-600 font-bold">+18 today</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-amber-300 transition">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition">
           <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Customer Base</p>
           <p className="text-xl font-black text-slate-900 mt-1 font-sans">
             {data.totalActiveCustomers.toLocaleString('en-IN')}
           </p>
           <span className="text-[10px] text-slate-400 font-mono">Verified KYC</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-amber-300 transition">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition">
           <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Reserve Ratio</p>
-          <p className="text-xl font-black text-amber-700 mt-1 font-sans">
+          <p className="text-xl font-black text-emerald-700 mt-1 font-sans">
             {data.reserveLiquidityRatio}%
           </p>
           <span className="text-[10px] text-emerald-600 font-bold font-mono">CRR/SLR Compliant</span>
         </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-amber-300 transition">
+        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 transition">
           <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Day Velocity</p>
           <p className="text-xl font-black text-slate-900 mt-1 font-sans">
             {data.todayTransactionsCount}
@@ -342,26 +342,26 @@ export const HeadOfficeDashboardPage: React.FC = () => {
       {/* Maker-Checker & Risk Alerts Center */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
         {/* Pending Approvals */}
-        <div className="bg-gradient-to-br from-amber-50/80 via-orange-50/30 to-amber-50/40 border border-amber-200 rounded-2xl p-6 flex items-start space-x-4 shadow-sm">
-          <div className="p-3 bg-gradient-to-br from-amber-500 to-amber-700 text-white rounded-xl shadow-md">
+        <div className="bg-gradient-to-br from-emerald-50/80 via-teal-50/30 to-emerald-50/40 border border-emerald-200 rounded-2xl p-6 flex items-start space-x-4 shadow-sm">
+          <div className="p-3 bg-gradient-to-br from-emerald-600 to-teal-700 text-white rounded-xl shadow-md">
             <CheckCircle className="w-5 h-5" />
           </div>
           <div className="flex-1">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-950 font-mono">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-950 font-mono">
               Maker-Checker Authorization Queue
             </h4>
-            <p className="text-xs text-amber-900/80 mt-1">
+            <p className="text-xs text-emerald-900/80 mt-1">
               Sensitive operations awaiting dual-authorization from Head Office / Branch Managers:
             </p>
             <div className="mt-3.5 flex flex-wrap gap-2 text-xs">
-              <span className="px-3 py-1 bg-white border border-amber-300/80 rounded-xl font-bold text-amber-950 shadow-xs">
-                Loans: <span className="text-amber-700">{data.pendingLoanApprovals}</span>
+              <span className="px-3 py-1 bg-white border border-emerald-300/80 rounded-xl font-bold text-emerald-950 shadow-xs">
+                Loans: <span className="text-emerald-700">{data.pendingLoanApprovals}</span>
               </span>
-              <span className="px-3 py-1 bg-white border border-amber-300/80 rounded-xl font-bold text-amber-950 shadow-xs">
-                High-Value Transfers: <span className="text-amber-700">{data.pendingFundTransferApprovals}</span>
+              <span className="px-3 py-1 bg-white border border-emerald-300/80 rounded-xl font-bold text-emerald-950 shadow-xs">
+                High-Value Transfers: <span className="text-emerald-700">{data.pendingFundTransferApprovals}</span>
               </span>
-              <span className="px-3 py-1 bg-white border border-amber-300/80 rounded-xl font-bold text-amber-950 shadow-xs">
-                Account Openings: <span className="text-amber-700">{data.pendingAccountApprovals}</span>
+              <span className="px-3 py-1 bg-white border border-emerald-300/80 rounded-xl font-bold text-emerald-950 shadow-xs">
+                Account Openings: <span className="text-emerald-700">{data.pendingAccountApprovals}</span>
               </span>
             </div>
           </div>
@@ -401,7 +401,7 @@ export const HeadOfficeDashboardPage: React.FC = () => {
                 Consolidated balance sheet progression over the last 6 months
               </p>
             </div>
-            <span className="text-[10px] font-mono bg-amber-50 text-amber-900 border border-amber-200 px-2.5 py-1 rounded-full font-bold">
+            <span className="text-[10px] font-mono bg-emerald-50 text-emerald-900 border border-emerald-200 px-2.5 py-1 rounded-full font-bold">
               INR CR
             </span>
           </div>
@@ -411,8 +411,8 @@ export const HeadOfficeDashboardPage: React.FC = () => {
               <AreaChart data={data.monthlyFinancialTrends}>
                 <defs>
                   <linearGradient id="colorDeposits" x1="0" y1="0" x2="0" y2="1">
-                    <stop offset="5%" stopColor="#D97706" stopOpacity={0.4}/>
-                    <stop offset="95%" stopColor="#D97706" stopOpacity={0.0}/>
+                    <stop offset="5%" stopColor="#059669" stopOpacity={0.4}/>
+                    <stop offset="95%" stopColor="#059669" stopOpacity={0.0}/>
                   </linearGradient>
                   <linearGradient id="colorAdvances" x1="0" y1="0" x2="0" y2="1">
                     <stop offset="5%" stopColor="#0F172A" stopOpacity={0.3}/>
@@ -424,8 +424,8 @@ export const HeadOfficeDashboardPage: React.FC = () => {
                 <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} domain={[800, 2000]} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0F172A',
-                    borderColor: '#D97706',
+                    backgroundColor: '#06231D',
+                    borderColor: '#10B981',
                     borderRadius: '12px',
                     color: '#fff',
                     fontSize: '12px',
@@ -436,7 +436,7 @@ export const HeadOfficeDashboardPage: React.FC = () => {
                   type="monotone"
                   dataKey="deposits"
                   name="Bank Deposits"
-                  stroke="#D97706"
+                  stroke="#059669"
                   fillOpacity={1}
                   fill="url(#colorDeposits)"
                   strokeWidth={2.5}
@@ -479,8 +479,8 @@ export const HeadOfficeDashboardPage: React.FC = () => {
                 <YAxis stroke="#94A3B8" fontSize={11} tickLine={false} />
                 <Tooltip
                   contentStyle={{
-                    backgroundColor: '#0F172A',
-                    borderColor: '#D97706',
+                    backgroundColor: '#06231D',
+                    borderColor: '#10B981',
                     borderRadius: '12px',
                     color: '#fff',
                     fontSize: '12px',
@@ -489,7 +489,7 @@ export const HeadOfficeDashboardPage: React.FC = () => {
                 <Bar
                   dataKey="count"
                   name="Txn Count"
-                  fill="#D97706"
+                  fill="#059669"
                   radius={[6, 6, 0, 0]}
                 />
               </BarChart>

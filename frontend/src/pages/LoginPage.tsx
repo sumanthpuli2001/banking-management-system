@@ -26,7 +26,7 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState<boolean>(false);
 
-  // Requirement 3: Warm up backend connection immediately on component mount!
+  // Requirement: Pre-warm backend connection immediately on mount
   useEffect(() => {
     let isMounted = true;
     const warmUp = async () => {
@@ -34,11 +34,10 @@ export const LoginPage: React.FC = () => {
         await api.get('/auth/health', { timeout: 3500 });
         if (isMounted) setBackendReady(true);
       } catch {
-        // Fallback ping to ensure Render container is active
         try {
           await api.get('/auth/me', { timeout: 4000 });
         } catch {
-          // container woke up or rejected unauthenticated
+          // container is waking up
         }
         if (isMounted) setBackendReady(true);
       }
@@ -84,11 +83,11 @@ export const LoginPage: React.FC = () => {
         style={{ backgroundImage: `url('/assets/luxury-bank-bg.jpg')` }}
       />
 
-      {/* Dark Obsidian & Gold Luxury Tint Overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-black/92 via-slate-950/85 to-black/92 backdrop-blur-[2px]" />
+      {/* Swiss Emerald & Obsidian Dark Tint Overlay */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#06231D]/92 via-[#09382E]/85 to-[#06231D]/92 backdrop-blur-[2px]" />
 
-      {/* Subtle Financial Radial Glow */}
-      <div className="absolute w-[600px] h-[600px] bg-amber-500/10 rounded-full blur-[120px] pointer-events-none top-1/2 left-1/4 -translate-y-1/2" />
+      {/* Subtle Mint/Emerald Radial Glow */}
+      <div className="absolute w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none top-1/2 left-1/4 -translate-y-1/2" />
 
       {/* Main Container */}
       <div className="w-full max-w-5xl relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
@@ -98,49 +97,49 @@ export const LoginPage: React.FC = () => {
           
           {/* Bank Crest & Brand Header */}
           <div className="flex items-center space-x-4">
-            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-amber-400/20 via-slate-900 to-black p-2 border border-amber-400/40 shadow-2xl flex items-center justify-center backdrop-blur-md">
-              <BankLogo size={46} className="filter drop-shadow-[0_2px_8px_rgba(245,158,11,0.5)]" />
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-slate-950 to-black p-2 border border-emerald-400/40 shadow-2xl flex items-center justify-center backdrop-blur-md">
+              <BankLogo size={46} className="filter drop-shadow-[0_2px_8px_rgba(16,185,129,0.5)]" />
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-xs font-mono font-bold tracking-widest text-amber-400 uppercase">
-                  Est. 1928 • Tier-1 Capital
+                <span className="text-xs font-mono font-bold tracking-widest text-emerald-400 uppercase">
+                  Est. 1928 • Swiss Private Banking Tier
                 </span>
-                <span className="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse" />
+                <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white">
                 Apex National Bank
               </h1>
               <p className="text-xs tracking-wider uppercase text-slate-300 font-medium mt-0.5">
-                Central Head Office & Institutional Banking Group
+                Central Head Office & Private Wealth Management Group
               </p>
             </div>
           </div>
 
           {/* Core Regulatory Certification Card */}
-          <div className="bg-slate-900/70 border border-amber-500/30 rounded-2xl p-6 backdrop-blur-md shadow-2xl relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/5 rounded-full blur-2xl pointer-events-none" />
+          <div className="bg-[#0B382D]/70 border border-emerald-500/30 rounded-2xl p-6 backdrop-blur-md shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
             
-            <div className="flex items-center space-x-2.5 text-amber-400 text-xs font-bold font-mono tracking-wide mb-2.5">
-              <ShieldCheck className="w-4 h-4 text-amber-400" />
-              <span>CENTRAL BANK MONETARY COMPLIANCE ARCHITECTURE</span>
+            <div className="flex items-center space-x-2.5 text-emerald-300 text-xs font-bold font-mono tracking-wide mb-2.5">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>CENTRAL MONETARY & SWISS WEALTH PROTOCOLS</span>
             </div>
             
-            <p className="text-xs text-slate-300 leading-relaxed font-light">
+            <p className="text-xs text-slate-200 leading-relaxed font-light">
               Apex National Bank Core Terminal governs multi-branch liquidity clearance, real-time RTGS/NEFT settlement corridors, immutable double-entry general ledgers, and maker-checker capital authorization across all national zones.
             </p>
 
-            <div className="mt-4 pt-4 border-t border-slate-800 grid grid-cols-3 gap-3 text-center">
-              <div className="bg-black/40 rounded-xl p-2.5 border border-slate-800">
-                <div className="text-base font-extrabold text-amber-300">24.8%</div>
+            <div className="mt-4 pt-4 border-t border-emerald-900/60 grid grid-cols-3 gap-3 text-center">
+              <div className="bg-black/40 rounded-xl p-2.5 border border-emerald-900/60">
+                <div className="text-base font-extrabold text-emerald-300">24.8%</div>
                 <div className="text-[10px] text-slate-400 uppercase tracking-tight">Capital Adequacy</div>
               </div>
-              <div className="bg-black/40 rounded-xl p-2.5 border border-slate-800">
+              <div className="bg-black/40 rounded-xl p-2.5 border border-emerald-900/60">
                 <div className="text-base font-extrabold text-emerald-400">100%</div>
-                <div className="text-[10px] text-slate-400 uppercase tracking-tight">Basel III Ratio</div>
+                <div className="text-[10px] text-slate-400 uppercase tracking-tight">Basel III Solvency</div>
               </div>
-              <div className="bg-black/40 rounded-xl p-2.5 border border-slate-800">
-                <div className="text-base font-extrabold text-amber-300">256-Bit</div>
+              <div className="bg-black/40 rounded-xl p-2.5 border border-emerald-900/60">
+                <div className="text-base font-extrabold text-emerald-300">256-Bit</div>
                 <div className="text-[10px] text-slate-400 uppercase tracking-tight">HSM Encryption</div>
               </div>
             </div>
@@ -149,15 +148,15 @@ export const LoginPage: React.FC = () => {
           {/* Institutional Trust Badges */}
           <div className="space-y-3">
             <div className="flex items-center space-x-3 text-xs text-slate-300">
-              <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
-                <Landmark className="w-4 h-4 text-amber-400" />
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <Landmark className="w-4 h-4 text-emerald-400" />
               </div>
               <span>Centralized Head Office oversight across Southern, Western & Northern zonal commands</span>
             </div>
 
             <div className="flex items-center space-x-3 text-xs text-slate-300">
-              <div className="w-7 h-7 rounded-lg bg-amber-500/10 border border-amber-500/30 flex items-center justify-center shrink-0">
-                <Award className="w-4 h-4 text-amber-400" />
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center shrink-0">
+                <Award className="w-4 h-4 text-emerald-400" />
               </div>
               <span>Dual-authorization segregation of duties for high-value advances & vault operations</span>
             </div>
@@ -165,7 +164,7 @@ export const LoginPage: React.FC = () => {
 
           {/* Connection Speed Status */}
           <div className="flex items-center space-x-2 text-[11px] font-mono text-slate-400 pt-1">
-            <Cpu className="w-3.5 h-3.5 text-amber-400" />
+            <Cpu className="w-3.5 h-3.5 text-emerald-400" />
             <span>Core Gateway:</span>
             <span className="flex items-center space-x-1.5 text-emerald-400 font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping inline-block" />
@@ -175,13 +174,13 @@ export const LoginPage: React.FC = () => {
         </div>
 
         {/* Right Column: Security Authentication Terminal */}
-        <div className="lg:col-span-5 bg-white rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border border-amber-200/40 p-8 sm:p-10 relative">
+        <div className="lg:col-span-5 bg-white rounded-3xl shadow-[0_25px_60px_-15px_rgba(0,0,0,0.8)] border border-emerald-200/50 p-8 sm:p-10 relative">
           
-          {/* Subtle Top Gold Accent Bar */}
-          <div className="absolute top-0 left-8 right-8 h-1.5 bg-gradient-to-r from-amber-600 via-yellow-400 to-amber-600 rounded-b" />
+          {/* Top Emerald Accent Bar */}
+          <div className="absolute top-0 left-8 right-8 h-1.5 bg-gradient-to-r from-emerald-700 via-emerald-500 to-emerald-700 rounded-b" />
 
           <div className="pb-5 mb-6 border-b border-slate-100">
-            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-amber-600">
+            <span className="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-700">
               Authorized Personnel Only
             </span>
             <h2 className="text-xl font-extrabold text-slate-900 tracking-tight mt-0.5">
@@ -193,7 +192,7 @@ export const LoginPage: React.FC = () => {
           </div>
 
           {error && (
-            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start space-x-2.5 text-xs text-rose-800 animate-shake">
+            <div className="mb-5 p-3.5 rounded-xl bg-rose-50 border border-rose-200 flex items-start space-x-2.5 text-xs text-rose-800">
               <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
               <span>{error}</span>
             </div>
@@ -201,7 +200,7 @@ export const LoginPage: React.FC = () => {
 
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 font-mono">
                 Username / Officer ID
               </label>
               <div className="relative">
@@ -211,14 +210,14 @@ export const LoginPage: React.FC = () => {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-mono transition bg-slate-50/50"
+                  className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 font-mono transition bg-slate-50/50"
                   placeholder="e.g. ho_admin"
                 />
               </div>
             </div>
 
             <div>
-              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+              <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2 font-mono">
                 Security Password
               </label>
               <div className="relative">
@@ -228,7 +227,7 @@ export const LoginPage: React.FC = () => {
                   required
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-amber-500 focus:ring-2 focus:ring-amber-500/20 font-mono transition bg-slate-50/50"
+                  className="w-full pl-10 pr-3.5 py-3 rounded-xl border border-slate-200 text-sm text-slate-900 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 font-mono transition bg-slate-50/50"
                   placeholder="••••••••••••"
                 />
               </div>
@@ -238,17 +237,17 @@ export const LoginPage: React.FC = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 hover:from-amber-600 hover:via-yellow-600 hover:to-amber-700 text-white font-bold py-3.5 px-4 rounded-xl text-sm transition-all duration-300 flex items-center justify-center space-x-2.5 shadow-xl hover:shadow-amber-500/20 border border-slate-800 disabled:opacity-60 transform active:scale-[0.99]"
+                className="w-full bg-gradient-to-r from-emerald-800 via-emerald-700 to-emerald-900 hover:from-emerald-700 hover:via-emerald-600 hover:to-emerald-800 text-white font-bold py-3.5 px-4 rounded-xl text-sm transition-all duration-300 flex items-center justify-center space-x-2.5 shadow-xl hover:shadow-emerald-700/20 border border-emerald-900 disabled:opacity-60 transform active:scale-[0.99]"
               >
                 {loading ? (
                   <div className="flex items-center space-x-2">
-                    <div className="w-4 h-4 border-2 border-amber-300 border-t-transparent rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-emerald-200 border-t-transparent rounded-full animate-spin" />
                     <span>AUTHENTICATING WITH CORE...</span>
                   </div>
                 ) : (
                   <>
                     <span className="tracking-wider">ACCESS SECURE PORTAL</span>
-                    <ArrowRight className="w-4 h-4 text-amber-400" />
+                    <ArrowRight className="w-4 h-4 text-emerald-300" />
                   </>
                 )}
               </button>

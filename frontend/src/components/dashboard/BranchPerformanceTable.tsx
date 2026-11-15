@@ -27,7 +27,7 @@ export const BranchPerformanceTable: React.FC<BranchPerformanceTableProps> = ({ 
           </p>
         </div>
         <div className="flex items-center space-x-2">
-          <span className="text-xs text-amber-900 bg-amber-50 border border-amber-200 px-3 py-1 rounded-full font-mono font-bold">
+          <span className="text-xs text-emerald-900 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-full font-mono font-bold">
             {branches.length} Active Nodes
           </span>
         </div>
@@ -48,15 +48,15 @@ export const BranchPerformanceTable: React.FC<BranchPerformanceTableProps> = ({ 
           </thead>
           <tbody className="divide-y divide-slate-100 font-medium">
             {branches.map((b) => (
-              <tr key={b.branchId} className="hover:bg-amber-50/30 transition">
+              <tr key={b.branchId} className="hover:bg-emerald-50/20 transition">
                 <td className="py-3.5 px-6">
                   <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 rounded-xl bg-amber-50 border border-amber-200 text-amber-800 flex items-center justify-center font-bold text-xs shadow-sm">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 flex items-center justify-center font-bold text-xs shadow-sm">
                       <Landmark className="w-4 h-4" />
                     </div>
                     <div>
                       <div className="font-bold text-slate-900">{b.branchName}</div>
-                      <div className="text-[10px] text-amber-700 font-mono tracking-wide font-semibold">
+                      <div className="text-[10px] text-emerald-700 font-mono tracking-wide font-semibold">
                         {b.branchCode}
                       </div>
                     </div>
@@ -82,7 +82,7 @@ export const BranchPerformanceTable: React.FC<BranchPerformanceTableProps> = ({ 
                       b.complianceScore >= 95
                         ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                         : b.complianceScore >= 90
-                        ? 'bg-amber-50 text-amber-800 border border-amber-200'
+                        ? 'bg-teal-50 text-teal-800 border border-teal-200'
                         : 'bg-rose-50 text-rose-800 border border-rose-200'
                     }`}
                   >

@@ -246,7 +246,7 @@ export const LoanDeskPage: React.FC = () => {
 
         <div className="bg-slate-900/80 border border-slate-800 rounded-xl p-4">
           <div className="text-xs font-medium text-slate-400">Applications in Pipeline</div>
-          <div className="text-xl font-bold font-mono text-amber-400 mt-1">{applications.length} Files</div>
+          <div className="text-xl font-bold font-mono text-emerald-400 mt-1">{applications.length} Files</div>
           <div className="text-[11px] text-slate-500 mt-1">Under review / sanction queue</div>
         </div>
       </div>
@@ -344,7 +344,7 @@ export const LoanDeskPage: React.FC = () => {
                           className={`font-mono font-bold px-2 py-0.5 rounded text-[11px] ${
                             app.creditScore >= 750
                               ? 'bg-emerald-950 text-emerald-400 border border-emerald-800/60'
-                              : 'bg-amber-950 text-amber-400 border border-amber-800/60'
+                              : 'bg-teal-950 text-teal-400 border border-teal-800/60'
                           }`}
                         >
                           CIBIL: {app.creditScore}
@@ -357,7 +357,7 @@ export const LoanDeskPage: React.FC = () => {
                               ? 'bg-emerald-950/80 text-emerald-400 border-emerald-800/60'
                               : app.status === 'REJECTED'
                               ? 'bg-rose-950/80 text-rose-400 border-rose-800/60'
-                              : 'bg-amber-950/80 text-amber-400 border-amber-800/60'
+                              : 'bg-teal-950/80 text-teal-400 border-teal-800/60'
                           }`}
                         >
                           {app.status}
@@ -428,7 +428,7 @@ export const LoanDeskPage: React.FC = () => {
                       <td className="px-5 py-4 font-mono font-bold text-white">
                         ₹{loan.sanctionedAmount?.toLocaleString('en-IN')}
                       </td>
-                      <td className="px-5 py-4 font-mono font-bold text-amber-400 text-sm">
+                      <td className="px-5 py-4 font-mono font-bold text-emerald-400 text-sm">
                         ₹{loan.outstandingPrincipal?.toLocaleString('en-IN')}
                       </td>
                       <td className="px-5 py-4">
@@ -635,7 +635,7 @@ export const LoanDeskPage: React.FC = () => {
                 </div>
                 <div>
                   <span className="text-slate-500">Current Outstanding:</span>
-                  <div className="font-bold font-mono text-amber-400">
+                  <div className="font-bold font-mono text-emerald-400">
                     ₹{selectedLoanForSchedule.outstandingPrincipal.toLocaleString('en-IN')}
                   </div>
                 </div>
@@ -684,7 +684,7 @@ export const LoanDeskPage: React.FC = () => {
                           <td className="px-4 py-3 text-blue-400">
                             ₹{item.principalComponent.toLocaleString('en-IN')}
                           </td>
-                          <td className="px-4 py-3 text-amber-400">
+                          <td className="px-4 py-3 text-teal-400">
                             ₹{item.interestComponent.toLocaleString('en-IN')}
                           </td>
                           <td className="px-4 py-3 text-slate-300">
