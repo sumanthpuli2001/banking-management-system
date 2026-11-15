@@ -49,6 +49,7 @@ public class TransactionService {
              auditService, accountingEngineService, tellerCashDrawerRepository, null);
     }
 
+    @org.springframework.beans.factory.annotation.Autowired
     public TransactionService(BankAccountRepository bankAccountRepository,
                               TransactionRepository transactionRepository,
                               TransactionLedgerEntryRepository ledgerEntryRepository,
@@ -56,7 +57,7 @@ public class TransactionService {
                               AuditService auditService,
                               AccountingEngineService accountingEngineService,
                               TellerCashDrawerRepository tellerCashDrawerRepository,
-                              AmlMonitoringEngineService amlMonitoringEngineService) {
+                              @org.springframework.beans.factory.annotation.Autowired(required = false) AmlMonitoringEngineService amlMonitoringEngineService) {
         this.bankAccountRepository = bankAccountRepository;
         this.transactionRepository = transactionRepository;
         this.ledgerEntryRepository = ledgerEntryRepository;
