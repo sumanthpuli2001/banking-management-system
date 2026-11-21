@@ -165,17 +165,17 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-xs sticky top-0 z-30 transition-all">
+      <header className="h-16 bg-[#071326] border-b border-slate-800/90 px-6 flex items-center justify-between shadow-md sticky top-0 z-30 transition-all text-white">
         {/* Global Search Bar */}
         <div className="flex items-center gap-4 w-96">
           <div className="relative w-full group">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-emerald-700 transition-colors" />
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-emerald-400 transition-colors" />
             <input
               type="text"
               placeholder="Search CIF, Account #, UTR, Branch Code, or Ledger..."
-              className="w-full bg-slate-100 border border-slate-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 text-xs pl-10 pr-10 py-2 rounded-xl outline-none transition-all text-slate-800 placeholder:text-slate-400 font-medium font-sans"
+              className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-emerald-500 focus:bg-slate-900 focus:ring-2 focus:ring-emerald-500/20 text-xs pl-10 pr-10 py-2 rounded-xl outline-none transition-all text-white placeholder:text-slate-400 font-medium font-sans shadow-inner"
             />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-400 shadow-2xs pointer-events-none">
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-300 shadow-2xs pointer-events-none">
               /
             </kbd>
           </div>
@@ -185,15 +185,15 @@ export const Header: React.FC = () => {
         <div className="flex items-center gap-3 sm:gap-4">
           {/* Live Telemetry & Compliance Status */}
           <div className="hidden xl:flex items-center gap-2.5">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-extrabold bg-emerald-500/10 text-emerald-800 border border-emerald-500/30 shadow-2xs">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-xs">
               <span className="relative flex h-2 w-2">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
               <span>Live Telemetry &middot; RTGS/NEFT Online</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-800/90 text-slate-200 border border-slate-700">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
               <span>RBI Regulated &middot; CRR/SLR 24.8% Compliant</span>
             </div>
           </div>
@@ -202,10 +202,10 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowInterviewGuide(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all border border-slate-700"
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl text-xs font-bold shadow-md transition-all border border-emerald-600/50"
             title="Open Core Banking Solution (CBS) Operations & Architecture Manual"
           >
-            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+            <BookOpen className="w-3.5 h-3.5 text-emerald-200" />
             <span className="hidden sm:inline">CBS Manual & Guide</span>
           </button>
 
@@ -217,12 +217,12 @@ export const Header: React.FC = () => {
                 setNotificationOpen(!notificationOpen);
                 setProfileOpen(false);
               }}
-              className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition"
+              className="relative p-2 text-slate-300 hover:text-white hover:bg-slate-800/90 rounded-xl transition"
               title="System & Compliance Alerts"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-600 text-white text-[9px] font-mono font-bold flex items-center justify-center ring-2 ring-white animate-pulse">
+                <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-600 text-white text-[9px] font-mono font-bold flex items-center justify-center ring-2 ring-slate-900 animate-pulse">
                   {unreadCount}
                 </span>
               )}
@@ -356,12 +356,12 @@ export const Header: React.FC = () => {
           </div>
 
           {/* User Identity Pill */}
-          <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
+          <div className="flex items-center gap-3 pl-3 border-l border-slate-700/80">
             <div className="text-right hidden sm:block">
-              <p className="text-xs font-bold text-slate-900 leading-tight">
+              <p className="text-xs font-bold text-white leading-tight">
                 {user?.fullName || user?.username || 'Executive Officer'}
               </p>
-              <span className="inline-block text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 mt-0.5">
+              <span className="inline-block text-[10px] font-semibold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40 mt-0.5">
                 {user?.roles?.[0]?.replace('ROLE_', '') || 'HEAD_OFFICE_ADMIN'}
               </span>
             </div>

@@ -21,6 +21,7 @@ import { TransactionReconciliationPage } from './pages/TransactionReconciliation
 import { RegulatoryLiquidityPage } from './pages/RegulatoryLiquidityPage';
 import { ComplianceAmlPage } from './pages/ComplianceAmlPage';
 import { CustomerPortalPage } from './pages/CustomerPortalPage';
+import { BranchPerformanceComparisonPage } from './pages/BranchPerformanceComparisonPage';
 import { PlaceholderModulePage } from './pages/PlaceholderModulePage';
 
 const RootRedirect: React.FC = () => {
@@ -47,22 +48,7 @@ export const App: React.FC = () => {
 
               {/* Organization Modules */}
               <Route path="/branches" element={<BranchManagementPage />} />
-              <Route
-                path="/branches/comparison"
-                element={
-                  <PlaceholderModulePage
-                    moduleName="Branch Performance Analytics"
-                    description="Cross-branch comparative benchmarking for deposits, advances, and audit compliance."
-                    targetPhase="PHASE 2"
-                    keyFeatures={[
-                      'Deposit-to-Advance ratio comparison charts',
-                      'Non-Performing Asset (NPA) percentages by branch',
-                      'Counter transaction velocity benchmarks',
-                      'Regional compliance audit scorecard ratings',
-                    ]}
-                  />
-                }
-              />
+              <Route path="/branches/comparison" element={<BranchPerformanceComparisonPage />} />
               <Route path="/employees" element={<EmployeeManagementPage />} />
 
               {/* Customer & Account Modules */}

@@ -31,20 +31,20 @@ export const LoginPage: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState<boolean>(false);
 
-  // Pre-warm backend connection immediately on mount
+  // Pre-warm backend connection immediately on mount with full wake-up tolerance
   useEffect(() => {
     let isMounted = true;
     const warmUp = async () => {
       try {
-        await api.get('/auth/health', { timeout: 3500 });
+        await api.get('/auth/health', { timeout: 35000 });
         if (isMounted) setBackendReady(true);
       } catch {
         try {
-          await api.get('/auth/me', { timeout: 4000 });
+          await api.get('/auth/me', { timeout: 35000 });
+          if (isMounted) setBackendReady(true);
         } catch {
-          // container waking up
+          if (isMounted) setBackendReady(true);
         }
-        if (isMounted) setBackendReady(true);
       }
     };
     warmUp();

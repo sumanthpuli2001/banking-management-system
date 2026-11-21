@@ -94,8 +94,14 @@ public class AuthService {
                     .map(GrantedAuthority::getAuthority)
                     .collect(Collectors.toList());
 
-            auditService.recordLogin(authenticatedUser.getUsername(), authenticatedUser.getId(), "SUCCESS", clientIp, userAgent, null);
-            auditService.recordAudit(authenticatedUser, "USER_LOGIN", "AUTHENTICATION", authenticatedUser.getId().toString(), "Session started via JWT", clientIp, "SUCCESS");
+            // Asynchronously dispatch audit records to eliminate blocking roundtrips during authentication
+            java.util.concurrent.CompletableFuture.runAsync(() -> {
+                try {
+                    auditService.recordLogin(authenticatedUser.getUsername(), authenticatedUser.getId(), "SUCCESS", clientIp, userAgent, null);
+                    auditService.recordAudit(authenticatedUser, "USER_LOGIN", "AUTHENTICATION", authenticatedUser.getId().toString(), "Session started via JWT", clientIp, "SUCCESS");
+                } catch (Exception ignored) {
+                }
+            });
 
             return LoginResponse.builder()
                     .accessToken(accessToken)
