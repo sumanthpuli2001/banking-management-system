@@ -165,36 +165,36 @@ export const Header: React.FC = () => {
 
   return (
     <>
-      <header className="h-16 bg-[#071326] border-b border-slate-800/90 px-6 flex items-center justify-between shadow-md sticky top-0 z-30 transition-all text-white">
+      <header className="h-[52px] bg-[#071326] border-b border-slate-800/90 px-4 sm:px-6 flex items-center justify-between shadow-md sticky top-0 z-30 transition-all text-white">
         {/* Global Search Bar */}
-        <div className="flex items-center gap-4 w-96">
+        <div className="flex items-center gap-3 w-72 sm:w-80">
           <div className="relative w-full group">
-            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-emerald-400 transition-colors" />
+            <Search className="w-3.5 h-3.5 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2 group-focus-within:text-emerald-400 transition-colors" />
             <input
               type="text"
-              placeholder="Search CIF, Account #, UTR, Branch Code, or Ledger..."
-              className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-emerald-500 focus:bg-slate-900 focus:ring-2 focus:ring-emerald-500/20 text-xs pl-10 pr-10 py-2 rounded-xl outline-none transition-all text-white placeholder:text-slate-400 font-medium font-sans shadow-inner"
+              placeholder="Search CIF, Account #, UTR, Branch..."
+              className="w-full bg-slate-900/90 border border-slate-700/80 focus:border-emerald-500 focus:bg-slate-900 focus:ring-1 focus:ring-emerald-500/20 text-xs pl-8 pr-8 py-1.5 rounded-lg outline-none transition-all text-white placeholder:text-slate-400 font-medium font-sans shadow-inner"
             />
-            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold bg-slate-800 border border-slate-700 px-1.5 py-0.5 rounded text-slate-300 shadow-2xs pointer-events-none">
+            <kbd className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[9px] font-mono font-bold bg-slate-800 border border-slate-700 px-1 py-0.2 rounded text-slate-400 shadow-2xs pointer-events-none">
               /
             </kbd>
           </div>
         </div>
 
         {/* Right Controls */}
-        <div className="flex items-center gap-3 sm:gap-4">
+        <div className="flex items-center gap-2.5 sm:gap-3">
           {/* Live Telemetry & Compliance Status */}
-          <div className="hidden xl:flex items-center gap-2.5">
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-xs">
-              <span className="relative flex h-2 w-2">
+          <div className="hidden xl:flex items-center gap-2">
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-950/80 text-emerald-300 border border-emerald-500/40 shadow-xs">
+              <span className="relative flex h-1.5 w-1.5">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
               </span>
-              <span>Live Telemetry &middot; RTGS/NEFT Online</span>
+              <span>RTGS/NEFT Online</span>
             </div>
-            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-800/90 text-slate-200 border border-slate-700">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-400" />
-              <span>RBI Regulated &middot; CRR/SLR 24.8% Compliant</span>
+            <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-800/90 text-slate-200 border border-slate-700">
+              <ShieldCheck className="w-3 h-3 text-emerald-400" />
+              <span>RBI CRR/SLR 24.8%</span>
             </div>
           </div>
 
@@ -202,11 +202,11 @@ export const Header: React.FC = () => {
           <button
             type="button"
             onClick={() => setShowInterviewGuide(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:to-teal-600 text-white rounded-xl text-xs font-bold shadow-md transition-all border border-emerald-600/50"
+            className="flex items-center gap-1.5 px-2.5 py-1 bg-gradient-to-r from-emerald-700 via-teal-700 to-emerald-800 hover:from-emerald-600 hover:to-teal-600 text-white rounded-lg text-xs font-bold shadow-md transition-all border border-emerald-600/50"
             title="Open Core Banking Solution (CBS) Operations & Architecture Manual"
           >
             <BookOpen className="w-3.5 h-3.5 text-emerald-200" />
-            <span className="hidden sm:inline">CBS Manual & Guide</span>
+            <span className="hidden sm:inline">CBS Guide</span>
           </button>
 
           {/* Notifications Dropdown */}
@@ -217,12 +217,12 @@ export const Header: React.FC = () => {
                 setNotificationOpen(!notificationOpen);
                 setProfileOpen(false);
               }}
-              className="relative p-2 text-slate-300 hover:text-white hover:bg-slate-800/90 rounded-xl transition"
+              className="relative p-1.5 text-slate-300 hover:text-white hover:bg-slate-800/90 rounded-lg transition"
               title="System & Compliance Alerts"
             >
               <Bell className="w-4 h-4" />
               {unreadCount > 0 && (
-                <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-600 text-white text-[9px] font-mono font-bold flex items-center justify-center ring-2 ring-slate-900 animate-pulse">
+                <span className="absolute top-0.5 right-0.5 min-w-[14px] h-[14px] px-0.5 rounded-full bg-rose-600 text-white text-[8px] font-mono font-bold flex items-center justify-center ring-1 ring-slate-900 animate-pulse">
                   {unreadCount}
                 </span>
               )}
@@ -356,12 +356,12 @@ export const Header: React.FC = () => {
           </div>
 
           {/* User Identity Pill */}
-          <div className="flex items-center gap-3 pl-3 border-l border-slate-700/80">
+          <div className="flex items-center gap-2.5 pl-2.5 border-l border-slate-700/80">
             <div className="text-right hidden sm:block">
               <p className="text-xs font-bold text-white leading-tight">
                 {user?.fullName || user?.username || 'Executive Officer'}
               </p>
-              <span className="inline-block text-[10px] font-semibold text-emerald-300 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/40 mt-0.5">
+              <span className="inline-block text-[9px] font-semibold text-emerald-300 bg-emerald-950/80 px-1.5 py-0.2 rounded border border-emerald-500/40">
                 {user?.roles?.[0]?.replace('ROLE_', '') || 'HEAD_OFFICE_ADMIN'}
               </span>
             </div>
@@ -373,12 +373,12 @@ export const Header: React.FC = () => {
                   setProfileOpen(!profileOpen);
                   setNotificationOpen(false);
                 }}
-                className="relative rounded-xl overflow-hidden focus:outline-none ring-2 ring-emerald-500/30 hover:ring-emerald-500 transition shadow-sm"
+                className="relative rounded-lg overflow-hidden focus:outline-none ring-1 ring-emerald-500/40 hover:ring-emerald-400 transition shadow-sm"
               >
                 <img
                   src={getAvatarByRoleOrUser(user?.roles?.[0] || user?.username, user?.fullName)}
                   alt="Avatar"
-                  className="w-9 h-9 object-cover rounded-xl"
+                  className="w-7 h-7 object-cover rounded-lg"
                   onError={(e) => {
                     (e.target as HTMLImageElement).src =
                       'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=320&auto=format&fit=crop&q=80';

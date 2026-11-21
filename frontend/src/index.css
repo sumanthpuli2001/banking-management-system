@@ -87,3 +87,96 @@ svg:focus {
     width: 100% !important;
   }
 }
+
+/* ==========================================================================
+   UNIVERSAL HIGH-CONTRAST EXECUTIVE CBS DATA TABLES & LISTS
+   Demarcated borders, distinct colored headers, alternating zebra striping
+   ========================================================================== */
+table {
+  border-collapse: collapse !important;
+  width: 100% !important;
+}
+
+table thead,
+table thead tr {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  border-bottom: 2px solid #10B981 !important;
+}
+
+table thead th {
+  background-color: #0F172A !important;
+  color: #F8FAFC !important;
+  font-weight: 800 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.05em !important;
+  text-transform: uppercase !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.15) !important;
+  border-bottom: 2px solid #10B981 !important;
+  padding: 10px 14px !important;
+  white-space: nowrap !important;
+}
+
+table thead th:last-child {
+  border-right: none !important;
+}
+
+table tbody tr {
+  border-bottom: 1px solid #CBD5E1 !important;
+  transition: background-color 0.15s ease-in-out !important;
+}
+
+table tbody tr:nth-child(even) {
+  background-color: #F8FAFC !important;
+}
+
+table tbody tr:nth-child(odd) {
+  background-color: #FFFFFF !important;
+}
+
+table tbody tr:hover {
+  background-color: #F0FDF4 !important;
+}
+
+table tbody td {
+  border-right: 1px solid #E2E8F0 !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  color: #0F172A !important;
+  font-weight: 500 !important;
+  padding: 10px 14px !important;
+}
+
+table tbody td:last-child {
+  border-right: none !important;
+}
+
+table tfoot tr,
+table tfoot td {
+  background-color: #F1F5F9 !important;
+  border-top: 2px solid #0F172A !important;
+  border-bottom: 1px solid #CBD5E1 !important;
+  font-weight: 700 !important;
+  color: #0F172A !important;
+}
+
+/* Crisp demarcated dividing border lines for lists, feeds, and detail cards */
+.divide-y > * + * {
+  border-top-color: #CBD5E1 !important;
+}
+
+.divide-slate-100 > * + * {
+  border-top-color: #CBD5E1 !important;
+}
+
+.divide-slate-200 > * + * {
+  border-top-color: #CBD5E1 !important;
+}
+
+.divide-slatebank-100 > * + * {
+  border-top-color: #CBD5E1 !important;
+}
+
+.divide-slatebank-200 > * + * {
+  border-top-color: #CBD5E1 !important;
+}
+

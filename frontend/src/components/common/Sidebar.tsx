@@ -187,7 +187,7 @@ export const Sidebar: React.FC = () => {
               to={item.path}
               end={item.path === '/dashboard'}
               className={({ isActive }) =>
-                `group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                `group flex items-center justify-between px-2.5 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200 ${
                   isActive
                     ? 'bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-transparent text-emerald-300 border-l-[3px] border-emerald-400 shadow-[inset_0_0_12px_rgba(16,184,129,0.12)]'
                     : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.06]'
@@ -212,26 +212,26 @@ export const Sidebar: React.FC = () => {
 
   return (
     <aside className="w-64 bg-gradient-to-b from-[#071326] via-[#0A1B36] to-[#050E1F] text-slate-300 flex flex-col shrink-0 border-r border-slate-800/80 shadow-2xl select-none relative z-30">
-      {/* Brand Header */}
-      <div className="h-16 flex items-center px-5 gap-3 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-950/60 ring-1 ring-white/20">
-          <Landmark className="w-5 h-5 text-slate-950" />
+      {/* Brand Header - Compact 52px */}
+      <div className="h-[52px] flex items-center px-4 gap-2.5 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md">
+        <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 text-slate-950 flex items-center justify-center font-black shadow-md shadow-emerald-950/60 ring-1 ring-white/20">
+          <Landmark className="w-4 h-4 text-slate-950" />
         </div>
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="font-black text-sm text-white tracking-wider">APEX BANK</span>
-            <span className="text-emerald-300 font-extrabold text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/90 border border-emerald-500/40 tracking-wider">
+            <span className="font-black text-xs text-white tracking-wider">APEX BANK</span>
+            <span className="text-emerald-300 font-extrabold text-[8px] px-1 py-0.2 rounded bg-emerald-950/90 border border-emerald-500/40 tracking-wider">
               CBS
             </span>
           </div>
-          <p className="text-[9px] text-slate-400 font-medium tracking-wide mt-0.5">
+          <p className="text-[8px] text-slate-400 font-medium tracking-wide">
             RBI Regulated • Scheduled Bank
           </p>
         </div>
       </div>
 
       {/* Categorized Navigation List */}
-      <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto custom-scrollbar">
+      <nav className="flex-1 px-2.5 py-2 space-y-0.5 overflow-y-auto custom-scrollbar">
         {renderNavGroup('Treasury & Executive', executiveItems)}
         {renderNavGroup('Branch Network & HR', orgItems)}
         {renderNavGroup('Counter & Cash Operations', counterItems)}
@@ -239,31 +239,31 @@ export const Sidebar: React.FC = () => {
         {renderNavGroup('Governance & Risk', auditItems)}
       </nav>
 
-      {/* User Status Bar */}
-      <div className="p-3 border-t border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
-        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all">
-          <div className="flex items-center gap-2.5 overflow-hidden">
+      {/* User Status Bar - Compact */}
+      <div className="p-2 border-t border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+        <div className="flex items-center justify-between p-2 rounded-lg bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all">
+          <div className="flex items-center gap-2 overflow-hidden">
             <div className="relative shrink-0">
               <img
                 src={getAvatarByRoleOrUser(user?.roles?.[0] || user?.username, user?.fullName)}
                 alt="Profile"
-                className="w-8 h-8 rounded-full object-cover border border-slate-700 ring-2 ring-emerald-500/40"
+                className="w-7 h-7 rounded-lg object-cover border border-slate-700 ring-1 ring-emerald-500/40"
                 onError={(e) => {
                   (e.target as HTMLImageElement).src =
                     'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=320&auto=format&fit=crop&q=80';
                 }}
               />
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-slate-950 absolute -bottom-0.5 -right-0.5 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-emerald-400 border-2 border-slate-950 absolute -bottom-0.5 -right-0.5 animate-pulse" />
             </div>
             <div className="truncate">
               <p className="text-xs font-bold text-white truncate leading-tight">
                 {user?.fullName || user?.username || 'Executive Officer'}
               </p>
-              <div className="flex items-center gap-1.5 mt-0.5">
-                <span className="inline-block text-[9px] font-extrabold tracking-wider px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 uppercase">
+              <div className="flex items-center gap-1 mt-0.5">
+                <span className="inline-block text-[8px] font-extrabold tracking-wider px-1 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 uppercase">
                   {primaryRole}
                 </span>
-                <span className="text-[9px] text-slate-400 font-mono">
+                <span className="text-[8px] text-slate-400 font-mono">
                   {user?.branchCode || 'HO-001'}
                 </span>
               </div>
@@ -272,9 +272,9 @@ export const Sidebar: React.FC = () => {
           <button
             onClick={logout}
             title="Sign Out"
-            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition"
+            className="p-1 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded transition"
           >
-            <LogOut className="w-4 h-4" />
+            <LogOut className="w-3.5 h-3.5" />
           </button>
         </div>
       </div>
