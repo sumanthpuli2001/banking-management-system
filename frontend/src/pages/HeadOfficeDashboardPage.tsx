@@ -4,7 +4,7 @@ import api, { cachedGet } from '../api/axios';
 import { cacheService } from '../api/cache';
 import { ApiResponse } from '../types/auth';
 import { HeadOfficeDashboardSummary, EodBatchRun } from '../types/dashboard';
-import { KpiCard } from '../components/dashboard/KpiCard';
+import { StatCard } from '../components/dashboard/StatCard';
 import { BranchPerformanceTable } from '../components/dashboard/BranchPerformanceTable';
 import { RecentActivityFeed } from '../components/dashboard/RecentActivityFeed';
 import {
@@ -299,41 +299,41 @@ export const HeadOfficeDashboardPage: React.FC = () => {
 
       {/* Primary Financial KPIs Strip */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        <KpiCard
+        <StatCard
           title="Total Bank Deposits"
-          value={data?.totalBankDeposits ?? 1845200000}
+          value={formatCurrency(data?.totalBankDeposits ?? 1845200000)}
           subtitle="Cumulative savings, current & term deposits"
           icon={Landmark}
-          accentColor="emerald"
-          isCurrency={true}
-          trend={{ value: '+8.4% YoY', isPositive: true }}
+          color="emerald"
+          trend="+8.4% YoY"
+          trendUp={true}
         />
-        <KpiCard
+        <StatCard
           title="Gross Bank Advances"
-          value={data?.totalBankAdvances ?? 1210400000}
+          value={formatCurrency(data?.totalBankAdvances ?? 1210400000)}
           subtitle="Sanctioned retail & commercial portfolios"
           icon={TrendingUp}
-          accentColor="blue"
-          isCurrency={true}
-          trend={{ value: '+12.1% YoY', isPositive: true }}
+          color="blue"
+          trend="+12.1% YoY"
+          trendUp={true}
         />
-        <KpiCard
+        <StatCard
           title="Today's Cash Inflow"
-          value={data?.todayDeposits ?? 42600000}
+          value={formatCurrency(data?.todayDeposits ?? 42600000)}
           subtitle="Branch counter & digital deposit credit"
           icon={ArrowDownCircle}
-          accentColor="green"
-          isCurrency={true}
-          trend={{ value: '+₹4.2 Cr Today', isPositive: true }}
+          color="teal"
+          trend="+₹4.2 Cr Today"
+          trendUp={true}
         />
-        <KpiCard
+        <StatCard
           title="Today's Cash Outflow"
-          value={data?.todayWithdrawals ?? 28150000}
+          value={formatCurrency(data?.todayWithdrawals ?? 28150000)}
           subtitle="Counter payouts & clearing settlements"
           icon={ArrowUpCircle}
-          accentColor="teal"
-          isCurrency={true}
-          trend={{ value: 'Net Clearing Settlement', isNeutral: true }}
+          color="navy"
+          trend="Net Clearing Settlement"
+          trendUp={true}
         />
       </div>
 

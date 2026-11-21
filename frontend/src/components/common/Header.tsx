@@ -18,8 +18,12 @@ import {
   ShieldAlert,
   ArrowRight,
   Layers,
-  X
+  Building,
+  X,
+  Sparkles
 } from 'lucide-react';
+import { InterviewGuideModal } from './InterviewGuideModal';
+import { getAvatarByRoleOrUser } from '../../utils/avatars';
 
 interface NotificationItem {
   id: string;
@@ -91,6 +95,7 @@ export const Header: React.FC = () => {
   const [currentTime, setCurrentTime] = useState<string>('');
   const [profileOpen, setProfileOpen] = useState<boolean>(false);
   const [notificationOpen, setNotificationOpen] = useState<boolean>(false);
+  const [showInterviewGuide, setShowInterviewGuide] = useState<boolean>(false);
   const [notifications, setNotifications] = useState<NotificationItem[]>(INITIAL_NOTIFICATIONS);
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'UNREAD' | 'URGENT'>('ALL');
 
@@ -158,267 +163,280 @@ export const Header: React.FC = () => {
   });
 
   return (
-    <header className="h-16 bg-white/95 backdrop-blur-md border-b border-emerald-200/60 text-slate-800 flex items-center justify-between px-6 select-none sticky top-0 z-30 shadow-xs">
-      {/* Left: Bank Identity & System State */}
-      <div className="flex items-center space-x-5">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-600 via-emerald-700 to-[#06231D] flex items-center justify-center shadow-md p-1 border border-emerald-400/40 shrink-0">
-            <BankLogo size={32} className="filter drop-shadow-sm" />
+    <>
+      <header className="h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between shadow-xs sticky top-0 z-30 transition-all">
+        {/* Global Search Bar */}
+        <div className="flex items-center gap-4 w-96">
+          <div className="relative w-full group">
+            <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 group-focus-within:text-emerald-700 transition-colors" />
+            <input
+              type="text"
+              placeholder="Search CIF, Account #, UTR, Branch Code, or Ledger..."
+              className="w-full bg-slate-100 border border-slate-200 focus:border-emerald-600 focus:bg-white focus:ring-2 focus:ring-emerald-500/20 text-xs pl-10 pr-10 py-2 rounded-xl outline-none transition-all text-slate-800 placeholder:text-slate-400 font-medium font-sans"
+            />
+            <kbd className="absolute right-3 top-1/2 -translate-y-1/2 text-[10px] font-mono font-bold bg-white border border-slate-200 px-1.5 py-0.5 rounded text-slate-400 shadow-2xs pointer-events-none">
+              /
+            </kbd>
           </div>
-          <div>
-            <div className="flex items-center space-x-2">
-              <span className="font-extrabold tracking-tight text-base text-slate-900 font-sans">
-                Apex National Bank
+        </div>
+
+        {/* Right Controls */}
+        <div className="flex items-center gap-3 sm:gap-4">
+          {/* Live Telemetry & Compliance Status */}
+          <div className="hidden xl:flex items-center gap-2.5">
+            <div className="flex items-center gap-2 px-3 py-1 rounded-full text-[11px] font-extrabold bg-emerald-500/10 text-emerald-800 border border-emerald-500/30 shadow-2xs">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span className="text-[10px] bg-emerald-50 text-emerald-900 font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300">
-                SCHEDULED COMMERCIAL BANK • RBI REGULATED
-              </span>
+              <span>Live Telemetry &middot; RTGS/NEFT Online</span>
             </div>
-            <p className="text-[11px] text-slate-500 tracking-normal font-medium">
-              Central Head Office & Institutional Banking Console
-            </p>
+            <div className="flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold bg-slate-100 text-slate-700 border border-slate-200">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
+              <span>RBI Regulated &middot; CRR/SLR 24.8% Compliant</span>
+            </div>
           </div>
-        </div>
 
-        {/* Financial Regulatory Status Pill */}
-        <div className="hidden xl:flex items-center space-x-2 text-xs bg-emerald-50/80 px-3.5 py-1.5 rounded-xl border border-emerald-200 text-slate-700 font-medium shadow-xs">
-          <ShieldCheck className="w-4 h-4 text-emerald-700" />
-          <span className="text-emerald-900 font-bold">CRR / SLR: 24.8% COMPLIANT</span>
-          <span className="text-emerald-300">•</span>
-          <Clock className="w-3.5 h-3.5 text-emerald-700" />
-          <span className="text-slate-800 font-medium">{currentTime || 'Synchronizing...'}</span>
-        </div>
-      </div>
-
-      {/* Middle: Universal Banking Search */}
-      <div className="hidden md:flex items-center flex-1 max-w-md mx-6">
-        <div className="relative w-full">
-          <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
-          <input
-            type="text"
-            placeholder="Search CIF, Account #, UTR, Branch Code, or General Ledger..."
-            className="w-full bg-slate-50 border border-slate-200 text-xs text-slate-900 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 transition placeholder:text-slate-400 shadow-inner font-sans"
-          />
-        </div>
-      </div>
-
-      {/* Right: Branch Info, Notifications & Executive Profile */}
-      <div className="flex items-center space-x-3 sm:space-x-4">
-        {/* Branch Context Card */}
-        <div className="hidden sm:flex flex-col text-right pr-2 border-r border-slate-200">
-          <span className="text-xs font-bold text-slate-800 flex items-center justify-end space-x-1.5">
-            <Landmark className="w-3.5 h-3.5 text-emerald-700" />
-            <span>{user?.branchName || 'Apex Central Head Office'}</span>
-          </span>
-          <span className="text-[10px] font-mono text-slate-500">
-            BRANCH: {user?.branchCode || 'HO-001'} {user?.isHeadOffice && '• [CENTRAL HO]'}
-          </span>
-        </div>
-
-        {/* Interactive Notifications Center */}
-        <div className="relative" ref={notifRef}>
+          {/* Workflow Guide & Interview Walkthrough Button */}
           <button
             type="button"
-            onClick={() => {
-              setNotificationOpen(!notificationOpen);
-              setProfileOpen(false);
-            }}
-            className="relative p-2 rounded-xl text-slate-600 hover:text-emerald-900 hover:bg-emerald-50 border border-transparent hover:border-emerald-200 transition focus:outline-none"
-            title="System & Compliance Notifications"
+            onClick={() => setShowInterviewGuide(true)}
+            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-800 via-teal-700 to-emerald-900 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl text-xs font-bold shadow-xs transition-transform active:scale-95 border border-emerald-900"
+            title="Open CBS Workflow Walkthrough & Interview Guide"
           >
-            <Bell className="w-4 h-4" />
-            {unreadCount > 0 && (
-              <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] px-1 rounded-full bg-rose-600 text-white text-[10px] font-mono font-bold flex items-center justify-center ring-2 ring-white animate-pulse">
-                {unreadCount}
-              </span>
-            )}
+            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <span className="hidden sm:inline">Workflow Guide</span>
           </button>
 
-          {notificationOpen && (
-            <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-emerald-200/90 p-0 z-50 animate-in fade-in slide-in-from-top-2 overflow-hidden">
-              {/* Header */}
-              <div className="p-3.5 bg-gradient-to-r from-emerald-900 via-emerald-850 to-[#06231D] text-white flex items-center justify-between">
-                <div className="flex items-center space-x-2">
-                  <Bell className="w-4 h-4 text-emerald-300" />
-                  <span className="text-xs font-bold tracking-wide uppercase">Operational Alerts</span>
-                  <span className="px-1.5 py-0.2 bg-emerald-700 text-emerald-100 rounded-full text-[10px] font-mono font-bold">
-                    {unreadCount} new
-                  </span>
-                </div>
-                {unreadCount > 0 && (
-                  <button
-                    onClick={markAllRead}
-                    className="text-[11px] text-emerald-300 hover:text-white font-medium underline"
-                  >
-                    Mark all read
-                  </button>
-                )}
-              </div>
+          {/* Notifications Dropdown */}
+          <div className="relative" ref={notifRef}>
+            <button
+              type="button"
+              onClick={() => {
+                setNotificationOpen(!notificationOpen);
+                setProfileOpen(false);
+              }}
+              className="relative p-2 text-slate-500 hover:text-slate-800 hover:bg-slate-100 rounded-xl transition"
+              title="System & Compliance Alerts"
+            >
+              <Bell className="w-4 h-4" />
+              {unreadCount > 0 && (
+                <span className="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-rose-600 text-white text-[9px] font-mono font-bold flex items-center justify-center ring-2 ring-white animate-pulse">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
 
-              {/* Filter Tabs */}
-              <div className="flex items-center px-3 py-2 bg-slate-50 border-b border-slate-100 text-xs gap-1.5 font-semibold">
-                <button
-                  onClick={() => setActiveFilter('ALL')}
-                  className={`px-2.5 py-1 rounded-lg transition ${
-                    activeFilter === 'ALL'
-                      ? 'bg-emerald-700 text-white'
-                      : 'text-slate-600 hover:bg-slate-200/70'
-                  }`}
-                >
-                  All ({notifications.length})
-                </button>
-                <button
-                  onClick={() => setActiveFilter('UNREAD')}
-                  className={`px-2.5 py-1 rounded-lg transition ${
-                    activeFilter === 'UNREAD'
-                      ? 'bg-emerald-700 text-white'
-                      : 'text-slate-600 hover:bg-slate-200/70'
-                  }`}
-                >
-                  Unread ({unreadCount})
-                </button>
-                <button
-                  onClick={() => setActiveFilter('URGENT')}
-                  className={`px-2.5 py-1 rounded-lg transition ${
-                    activeFilter === 'URGENT'
-                      ? 'bg-rose-700 text-white'
-                      : 'text-slate-600 hover:bg-slate-200/70'
-                  }`}
-                >
-                  Urgent
-                </button>
-              </div>
-
-              {/* Notification List */}
-              <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
-                {filteredNotifications.length === 0 ? (
-                  <div className="p-6 text-center text-xs text-slate-400">
-                    No notifications in this category.
+            {notificationOpen && (
+              <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-2xl border border-slate-200 p-0 z-50 animate-in fade-in slide-in-from-top-2 overflow-hidden">
+                <div className="p-3.5 bg-gradient-to-r from-slate-950 via-[#06231D] to-slate-900 text-white flex items-center justify-between">
+                  <div className="flex items-center space-x-2">
+                    <Bell className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs font-bold uppercase tracking-wider">Operational Alerts</span>
+                    <span className="px-2 py-0.5 bg-emerald-800 text-emerald-100 rounded-full text-[10px] font-bold">
+                      {unreadCount} new
+                    </span>
                   </div>
-                ) : (
-                  filteredNotifications.map((n) => (
-                    <div
-                      key={n.id}
-                      onClick={() => handleNotificationClick(n)}
-                      className={`p-3.5 hover:bg-emerald-50/50 cursor-pointer transition flex items-start space-x-3 ${
-                        !n.isRead ? 'bg-emerald-50/30' : ''
-                      }`}
+                  {unreadCount > 0 && (
+                    <button
+                      onClick={markAllRead}
+                      className="text-[11px] text-emerald-300 hover:text-white font-medium underline"
                     >
-                      <div className="mt-0.5 shrink-0">
-                        {n.severity === 'HIGH' ? (
-                          <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center">
-                            <ShieldAlert className="w-4 h-4" />
+                      Mark all read
+                    </button>
+                  )}
+                </div>
+
+                {/* Filter Tabs */}
+                <div className="flex items-center px-3 py-2 bg-slate-50 border-b border-slate-100 text-xs gap-1.5 font-semibold">
+                  <button
+                    onClick={() => setActiveFilter('ALL')}
+                    className={`px-2.5 py-1 rounded-lg transition ${
+                      activeFilter === 'ALL'
+                        ? 'bg-emerald-800 text-white'
+                        : 'text-slate-600 hover:bg-slate-200/70'
+                    }`}
+                  >
+                    All ({notifications.length})
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('UNREAD')}
+                    className={`px-2.5 py-1 rounded-lg transition ${
+                      activeFilter === 'UNREAD'
+                        ? 'bg-emerald-800 text-white'
+                        : 'text-slate-600 hover:bg-slate-200/70'
+                    }`}
+                  >
+                    Unread ({unreadCount})
+                  </button>
+                  <button
+                    onClick={() => setActiveFilter('URGENT')}
+                    className={`px-2.5 py-1 rounded-lg transition ${
+                      activeFilter === 'URGENT'
+                        ? 'bg-rose-700 text-white'
+                        : 'text-slate-600 hover:bg-slate-200/70'
+                    }`}
+                  >
+                    Urgent
+                  </button>
+                </div>
+
+                {/* Notification List */}
+                <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
+                  {filteredNotifications.length === 0 ? (
+                    <div className="p-6 text-center text-xs text-slate-400">
+                      No notifications in this category.
+                    </div>
+                  ) : (
+                    filteredNotifications.map((n) => (
+                      <div
+                        key={n.id}
+                        onClick={() => handleNotificationClick(n)}
+                        className={`p-3.5 hover:bg-emerald-50/50 cursor-pointer transition flex items-start space-x-3 ${
+                          !n.isRead ? 'bg-emerald-50/30' : ''
+                        }`}
+                      >
+                        <div className="mt-0.5 shrink-0">
+                          {n.severity === 'HIGH' ? (
+                            <div className="w-7 h-7 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center">
+                              <ShieldAlert className="w-4 h-4" />
+                            </div>
+                          ) : n.type === 'APPROVAL' ? (
+                            <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
+                              <AlertTriangle className="w-4 h-4" />
+                            </div>
+                          ) : (
+                            <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
+                              <CheckCircle2 className="w-4 h-4" />
+                            </div>
+                          )}
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center justify-between">
+                            <p className={`text-xs ${!n.isRead ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`}>
+                              {n.title}
+                            </p>
+                            <span className="text-[10px] text-slate-400 font-mono shrink-0 ml-2">
+                              {n.timestamp}
+                            </span>
                           </div>
-                        ) : n.type === 'APPROVAL' ? (
-                          <div className="w-7 h-7 rounded-lg bg-amber-100 text-amber-700 flex items-center justify-center">
-                            <AlertTriangle className="w-4 h-4" />
+                          <p className="text-[11px] text-slate-600 leading-snug mt-0.5 line-clamp-2">
+                            {n.description}
+                          </p>
+                          <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-emerald-700">
+                            <span>Open in module</span>
+                            <ArrowRight className="w-3 h-3" />
                           </div>
-                        ) : (
-                          <div className="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-700 flex items-center justify-center">
-                            <CheckCircle2 className="w-4 h-4" />
-                          </div>
+                        </div>
+
+                        {!n.isRead && (
+                          <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0 mt-2" />
                         )}
                       </div>
+                    ))
+                  )}
+                </div>
 
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center justify-between">
-                          <p className={`text-xs ${!n.isRead ? 'font-bold text-slate-900' : 'font-medium text-slate-700'}`}>
-                            {n.title}
-                          </p>
-                          <span className="text-[10px] text-slate-400 font-mono shrink-0 ml-2">
-                            {n.timestamp}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-600 leading-snug mt-0.5 line-clamp-2">
-                          {n.description}
-                        </p>
-                        <div className="mt-1.5 flex items-center gap-1 text-[10px] font-semibold text-emerald-700">
-                          <span>View in module</span>
-                          <ArrowRight className="w-3 h-3" />
-                        </div>
-                      </div>
-
-                      {!n.isRead && (
-                        <span className="w-2 h-2 rounded-full bg-emerald-600 shrink-0 mt-2" />
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-
-              {/* Footer */}
-              <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
-                <button
-                  onClick={() => {
-                    setNotificationOpen(false);
-                    navigate('/dashboard');
-                  }}
-                  className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 flex items-center justify-center gap-1 mx-auto"
-                >
-                  <span>Open Head Office Command Center</span>
-                  <ExternalLink className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Executive Profile Dropdown */}
-        <div className="relative" ref={profileRef}>
-          <button
-            onClick={() => {
-              setProfileOpen(!profileOpen);
-              setNotificationOpen(false);
-            }}
-            className="flex items-center space-x-2.5 p-1.5 rounded-xl bg-slate-50 hover:bg-emerald-50/70 border border-slate-200 hover:border-emerald-300 transition"
-          >
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-slate-900 to-emerald-800 text-white font-bold text-xs flex items-center justify-center shadow-sm">
-              {user?.fullName?.charAt(0) || 'A'}
-            </div>
-            <div className="hidden lg:block text-left pr-1">
-              <div className="text-xs font-bold text-slate-900 leading-tight">
-                {user?.fullName || 'Institutional Officer'}
-              </div>
-              <div className="text-[10px] text-emerald-700 font-mono font-medium">
-                {user?.roles?.[0] || 'SUPER_ADMIN'}
-              </div>
-            </div>
-            <ChevronDown className="w-3.5 h-3.5 text-slate-400" />
-          </button>
-
-          {profileOpen && (
-            <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-xl border border-emerald-200/80 p-2 z-50 animate-in fade-in slide-in-from-top-2">
-              <div className="p-3 border-b border-slate-100">
-                <p className="text-xs font-bold text-slate-900">{user?.fullName}</p>
-                <p className="text-[11px] text-slate-500 truncate font-mono">{user?.email}</p>
-                <div className="mt-2 flex flex-wrap gap-1">
-                  {user?.roles?.map((r) => (
-                    <span
-                      key={r}
-                      className="px-2 py-0.5 rounded-full text-[9px] font-mono font-bold bg-emerald-50 text-emerald-800 border border-emerald-200"
-                    >
-                      {r}
-                    </span>
-                  ))}
+                <div className="p-2.5 bg-slate-50 border-t border-slate-100 text-center">
+                  <button
+                    onClick={() => {
+                      setNotificationOpen(false);
+                      navigate('/dashboard');
+                    }}
+                    className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 flex items-center justify-center gap-1 mx-auto"
+                  >
+                    <span>Open Head Office Command Center</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               </div>
+            )}
+          </div>
 
-              <div className="p-1 space-y-1">
-                <button
-                  onClick={() => {
-                    setProfileOpen(false);
-                    logout();
-                  }}
-                  className="w-full flex items-center space-x-2 px-3 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 rounded-xl transition"
-                >
-                  <LogOut className="w-4 h-4" />
-                  <span>Terminate Institutional Session</span>
-                </button>
-              </div>
+          {/* User Identity Pill */}
+          <div className="flex items-center gap-3 pl-3 border-l border-slate-200">
+            <div className="text-right hidden sm:block">
+              <p className="text-xs font-bold text-slate-900 leading-tight">
+                {user?.fullName || user?.username || 'Executive Officer'}
+              </p>
+              <span className="inline-block text-[10px] font-semibold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 mt-0.5">
+                {user?.roles?.[0]?.replace('ROLE_', '') || 'HEAD_OFFICE_ADMIN'}
+              </span>
             </div>
-          )}
+
+            <div className="relative" ref={profileRef}>
+              <button
+                type="button"
+                onClick={() => {
+                  setProfileOpen(!profileOpen);
+                  setNotificationOpen(false);
+                }}
+                className="relative rounded-xl overflow-hidden focus:outline-none ring-2 ring-emerald-500/30 hover:ring-emerald-500 transition shadow-sm"
+              >
+                <img
+                  src={getAvatarByRoleOrUser(user?.roles?.[0] || user?.username, user?.fullName)}
+                  alt="Avatar"
+                  className="w-9 h-9 object-cover rounded-xl"
+                  onError={(e) => {
+                    (e.target as HTMLImageElement).src =
+                      'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=320&auto=format&fit=crop&q=80';
+                  }}
+                />
+              </button>
+
+              {profileOpen && (
+                <div className="absolute right-0 mt-2 w-64 bg-white border border-slate-200 rounded-2xl shadow-2xl py-2 z-50">
+                  <div className="px-4 py-3 border-b border-slate-100">
+                    <p className="text-xs font-bold text-slate-900">{user?.fullName || user?.username}</p>
+                    <p className="text-[11px] text-slate-500">{user?.email || 'admin@apexbank.in'}</p>
+                    <span className="inline-block text-[10px] font-bold text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 mt-1.5">
+                      BRANCH: {user?.branchCode || 'HO-001'} (HEAD OFFICE)
+                    </span>
+                  </div>
+
+                  <div className="p-2 space-y-1">
+                    <button
+                      onClick={() => {
+                        setProfileOpen(false);
+                        navigate('/dashboard');
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50 rounded-xl transition flex items-center justify-between"
+                    >
+                      <span>Command Center</span>
+                      <Building className="w-3.5 h-3.5 text-slate-400" />
+                    </button>
+                    <button
+                      onClick={() => {
+                        setProfileOpen(false);
+                        setShowInterviewGuide(true);
+                      }}
+                      className="w-full text-left px-3 py-2 text-xs font-semibold text-emerald-800 hover:bg-emerald-50 rounded-xl transition flex items-center justify-between"
+                    >
+                      <span>Interview Guide</span>
+                      <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                    </button>
+                    <button
+                      onClick={logout}
+                      className="w-full text-left px-3 py-2 text-xs font-bold text-rose-600 hover:bg-rose-50 rounded-xl transition flex items-center justify-between"
+                    >
+                      <span>Sign Out</span>
+                      <LogOut className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
         </div>
-      </div>
-    </header>
+      </header>
+
+      {/* Workflow & Interview Guide Modal */}
+      <InterviewGuideModal
+        isOpen={showInterviewGuide}
+        onClose={() => setShowInterviewGuide(false)}
+      />
+    </>
   );
 };

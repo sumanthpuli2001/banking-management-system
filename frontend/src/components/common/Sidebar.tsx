@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { NavLink } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import { getAvatarByRoleOrUser } from '../../utils/avatars';
 import {
   LayoutDashboard,
   Building,
@@ -12,262 +13,264 @@ import {
   PiggyBank,
   CheckSquare,
   ShieldAlert,
-  ChevronRight,
-  ChevronDown,
   Layers,
   ShieldCheck,
   BookOpen,
-  Scale
+  Scale,
+  LogOut,
+  Sparkles
 } from 'lucide-react';
 
-interface NavItem {
-  name: string;
-  path: string;
-  icon: React.ElementType;
-  badge?: string;
-  allowedRoles?: string[];
-}
-
-interface NavSection {
-  title: string;
-  items: NavItem[];
-}
-
 export const Sidebar: React.FC = () => {
-  const { hasRole } = useAuth();
-  const [collapsedSections, setCollapsedSections] = useState<Record<string, boolean>>({});
+  const { user, hasRole, logout } = useAuth();
 
-  const toggleSection = (title: string) => {
-    setCollapsedSections((prev) => ({
-      ...prev,
-      [title]: !prev[title],
-    }));
-  };
+  const navItems = [
+    // Executive Oversight
+    {
+      name: 'Head Office Dashboard',
+      path: '/dashboard',
+      icon: LayoutDashboard,
+      group: 'Executive Oversight',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR']),
+    },
+    {
+      name: 'Regulatory & Liquidity Hub',
+      path: '/regulatory',
+      icon: ShieldCheck,
+      group: 'Executive Oversight',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR']),
+    },
+    {
+      name: 'Branch Performance',
+      path: '/branches/comparison',
+      icon: Layers,
+      group: 'Executive Oversight',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR']),
+    },
+    {
+      name: 'My Retail Banking',
+      path: '/customer-portal',
+      icon: UserCheck,
+      group: 'Executive Oversight',
+      show: hasRole(['CUSTOMER', 'SUPER_ADMIN']),
+    },
 
-  const sections: NavSection[] = [
+    // Organization Control
     {
-      title: 'EXECUTIVE OVERSIGHT',
-      items: [
-        {
-          name: 'Head Office Dashboard',
-          path: '/dashboard',
-          icon: LayoutDashboard,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR'],
-        },
-        {
-          name: 'Regulatory & Liquidity Hub',
-          path: '/regulatory',
-          icon: ShieldCheck,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR'],
-        },
-        {
-          name: 'My Retail Banking',
-          path: '/customer-portal',
-          icon: UserCheck,
-          allowedRoles: ['CUSTOMER', 'SUPER_ADMIN'],
-        },
-        {
-          name: 'Branch Performance',
-          path: '/branches/comparison',
-          icon: Layers,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR'],
-        },
-      ],
+      name: 'Branch Management',
+      path: '/branches',
+      icon: Building,
+      group: 'Organization Control',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER']),
     },
     {
-      title: 'ORGANIZATION CONTROL',
-      items: [
-        {
-          name: 'Branch Management',
-          path: '/branches',
-          icon: Building,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER'],
-        },
-        {
-          name: 'Employee Directory',
-          path: '/employees',
-          icon: Users,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER'],
-        },
-      ],
+      name: 'Employee Directory',
+      path: '/employees',
+      icon: Users,
+      group: 'Organization Control',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER']),
+    },
+
+    // Counter & Cash Operations
+    {
+      name: 'Cashier Till & Vault',
+      path: '/branch-cash',
+      icon: Landmark,
+      group: 'Counter Operations',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER', 'CASHIER', 'AUDITOR']),
     },
     {
-      title: 'RETAIL OPERATIONS',
-      items: [
-        {
-          name: 'Customer Onboarding',
-          path: '/customers',
-          icon: UserCheck,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE'],
-        },
-        {
-          name: 'Bank Accounts',
-          path: '/accounts',
-          icon: CreditCard,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CASHIER'],
-        },
-      ],
+      name: 'Fund Transfers',
+      path: '/transfers',
+      icon: ArrowLeftRight,
+      group: 'Counter Operations',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CASHIER', 'CUSTOMER']),
     },
     {
-      title: 'COUNTER TRANSACTIONS',
-      items: [
-        {
-          name: 'Cashier Till & Vault',
-          path: '/cashier',
-          icon: Landmark,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER', 'CASHIER', 'AUDITOR'],
-        },
-        {
-          name: 'Fund Transfers',
-          path: '/transfers',
-          icon: ArrowLeftRight,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CASHIER', 'CUSTOMER'],
-        },
-      ],
+      name: 'Cash Counter Desk',
+      path: '/deposits',
+      icon: CreditCard,
+      group: 'Counter Operations',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CASHIER']),
     },
     {
-      title: 'CREDIT & TREASURY',
-      items: [
-        {
-          name: 'Loan Desk',
-          path: '/loans',
-          icon: Landmark,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'LOAN_OFFICER'],
-        },
-        {
-          name: 'Term & Recurring Deposits',
-          path: '/deposits',
-          icon: PiggyBank,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CUSTOMER'],
-        },
-      ],
+      name: 'Bank Accounts',
+      path: '/accounts',
+      icon: CreditCard,
+      group: 'Counter Operations',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CASHIER']),
     },
     {
-      title: 'GOVERNANCE & AUDIT',
-      items: [
-        {
-          name: 'General Ledger & COA',
-          path: '/accounting',
-          icon: BookOpen,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER'],
-        },
-        {
-          name: 'Ledger Reconciliation',
-          path: '/reconciliation',
-          icon: Scale,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER'],
-        },
-        {
-          name: 'Maker-Checker Queue',
-          path: '/approvals',
-          icon: CheckSquare,
-          badge: '4',
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER'],
-        },
-        {
-          name: 'AML & KYC Compliance',
-          path: '/compliance',
-          icon: ShieldAlert,
-          badge: 'AML',
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER'],
-        },
-        {
-          name: 'Audit & Compliance',
-          path: '/audit',
-          icon: ShieldAlert,
-          allowedRoles: ['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'AUDITOR'],
-        },
-      ],
+      name: 'Customer Onboarding',
+      path: '/customers',
+      icon: UserCheck,
+      group: 'Counter Operations',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE']),
+    },
+
+    // Credit & Treasury
+    {
+      name: 'Loan Desk',
+      path: '/loans',
+      icon: Building,
+      group: 'Credit & Treasury',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'LOAN_OFFICER']),
+    },
+    {
+      name: 'Term & Recurring Deposits',
+      path: '/deposits/term',
+      icon: PiggyBank,
+      group: 'Credit & Treasury',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'BRANCH_MANAGER', 'BANK_EMPLOYEE', 'CUSTOMER']),
+    },
+
+    // Governance & Audit
+    {
+      name: 'Maker-Checker Queue',
+      path: '/approvals',
+      icon: CheckSquare,
+      badge: '4',
+      group: 'Governance & Audit',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'BRANCH_MANAGER']),
+    },
+    {
+      name: 'General Ledger & COA',
+      path: '/accounting',
+      icon: BookOpen,
+      group: 'Governance & Audit',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER']),
+    },
+    {
+      name: 'Ledger Reconciliation',
+      path: '/reconciliation',
+      icon: Scale,
+      group: 'Governance & Audit',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER']),
+    },
+    {
+      name: 'AML & KYC Compliance',
+      path: '/compliance',
+      icon: ShieldAlert,
+      badge: 'AML',
+      group: 'Governance & Audit',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'REGIONAL_MANAGER', 'AUDITOR', 'BRANCH_MANAGER']),
+    },
+    {
+      name: 'Audit Forensics',
+      path: '/audit',
+      icon: ShieldAlert,
+      group: 'Governance & Audit',
+      show: hasRole(['SUPER_ADMIN', 'HEAD_OFFICE_ADMIN', 'AUDITOR']),
     },
   ];
 
-  return (
-    <aside className="w-64 bg-white border-r border-slate-200/80 text-slate-700 flex flex-col shrink-0 select-none shadow-[2px_0_8px_-3px_rgba(0,0,0,0.04)]">
-      {/* Navigation Groups */}
-      <div className="flex-1 overflow-y-auto py-4 px-3 space-y-5 custom-scrollbar">
-        {sections.map((section) => {
-          const visibleItems = section.items.filter(
-            (item) => !item.allowedRoles || item.allowedRoles.some((role: any) => hasRole(role))
-          );
+  const primaryRole = user?.roles?.[0]?.replace('ROLE_', '') || 'STAFF';
 
-          if (visibleItems.length === 0) return null;
-          const isCollapsed = collapsedSections[section.title];
+  const executiveItems = navItems.filter((i) => i.show && i.group === 'Executive Oversight');
+  const orgItems = navItems.filter((i) => i.show && i.group === 'Organization Control');
+  const counterItems = navItems.filter((i) => i.show && i.group === 'Counter Operations');
+  const creditItems = navItems.filter((i) => i.show && i.group === 'Credit & Treasury');
+  const auditItems = navItems.filter((i) => i.show && i.group === 'Governance & Audit');
 
+  const renderNavGroup = (title: string, items: typeof navItems) => {
+    if (items.length === 0) return null;
+    return (
+      <div className="space-y-1 pt-3 first:pt-0">
+        <div className="px-3 pb-1.5 text-[10px] font-black uppercase tracking-widest text-slate-500 flex items-center justify-between">
+          <span>{title}</span>
+        </div>
+        {items.map((item) => {
+          const Icon = item.icon;
           return (
-            <div key={section.title} className="space-y-1">
-              <button
-                type="button"
-                onClick={() => toggleSection(section.title)}
-                className="w-full flex items-center justify-between px-3 py-1.5 text-[10px] font-mono font-bold tracking-wider text-slate-400 hover:text-emerald-800 transition uppercase"
-              >
-                <span>{section.title}</span>
-                {isCollapsed ? (
-                  <ChevronRight className="w-3 h-3 text-slate-400" />
-                ) : (
-                  <ChevronDown className="w-3 h-3 text-slate-400" />
-                )}
-              </button>
-
-              {!isCollapsed && (
-                <div className="space-y-0.5 mt-1">
-                  {visibleItems.map((item) => {
-                    const Icon = item.icon;
-                    return (
-                      <NavLink
-                        key={item.path}
-                        to={item.path}
-                        end={item.path === '/dashboard'}
-                        className={({ isActive }) =>
-                          `group flex items-center justify-between px-3 py-2 text-xs font-semibold rounded-xl transition-all duration-200 ${
-                            isActive
-                              ? 'bg-gradient-to-r from-emerald-600/15 via-emerald-600/5 to-transparent text-emerald-950 font-bold border-l-4 border-emerald-600 shadow-xs'
-                              : 'text-slate-600 hover:text-emerald-950 hover:bg-emerald-50/60'
-                          }`
-                        }
-                      >
-                        {({ isActive }) => (
-                          <>
-                            <div className="flex items-center space-x-2.5 truncate">
-                              <Icon
-                                className={`w-4 h-4 shrink-0 transition-colors ${
-                                  isActive
-                                    ? 'text-emerald-700'
-                                    : 'text-slate-400 group-hover:text-emerald-700'
-                                }`}
-                              />
-                              <span className="truncate">{item.name}</span>
-                            </div>
-
-                            {item.badge && (
-                              <span className="ml-2 px-1.5 py-0.5 text-[9px] font-mono font-bold rounded-full bg-emerald-100 text-emerald-800 border border-emerald-300">
-                                {item.badge}
-                              </span>
-                            )}
-                          </>
-                        )}
-                      </NavLink>
-                    );
-                  })}
-                </div>
+            <NavLink
+              key={item.path}
+              to={item.path}
+              end={item.path === '/dashboard'}
+              className={({ isActive }) =>
+                `group flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-all duration-200 ${
+                  isActive
+                    ? 'bg-gradient-to-r from-emerald-500/20 via-emerald-500/10 to-transparent text-emerald-300 border-l-[3px] border-emerald-400 shadow-[inset_0_0_12px_rgba(16,184,129,0.12)]'
+                    : 'text-slate-400 hover:text-slate-100 hover:bg-white/[0.06]'
+                }`
+              }
+            >
+              <div className="flex items-center gap-3 truncate">
+                <Icon className="w-4 h-4 shrink-0 transition-colors group-hover:text-emerald-400" />
+                <span className="truncate">{item.name}</span>
+              </div>
+              {item.badge && (
+                <span className="ml-2 px-1.5 py-0.5 text-[9px] font-mono font-bold rounded-full bg-emerald-950/80 text-emerald-300 border border-emerald-500/40">
+                  {item.badge}
+                </span>
               )}
-            </div>
+            </NavLink>
           );
         })}
       </div>
+    );
+  };
 
-      {/* Bottom Swiss Wealth Solvency Card */}
-      <div className="p-3 border-t border-slate-100 bg-slate-50/70">
-        <div className="bg-gradient-to-br from-emerald-50 to-teal-50/40 rounded-xl p-3 border border-emerald-200/80 shadow-xs">
-          <div className="flex items-center justify-between text-[11px] font-bold text-emerald-950 mb-1">
-            <span className="flex items-center space-x-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Capital Solvency</span>
+  return (
+    <aside className="w-64 bg-gradient-to-b from-[#080E1E] via-[#0B152B] to-[#060B18] text-slate-300 flex flex-col shrink-0 border-r border-slate-800/80 shadow-2xl select-none relative z-30">
+      {/* Brand Header */}
+      <div className="h-16 flex items-center px-5 gap-3 border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-md">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/25 ring-1 ring-white/20">
+          <Landmark className="w-5 h-5 text-slate-950" />
+        </div>
+        <div>
+          <div className="flex items-center gap-1.5">
+            <span className="font-black text-base text-white tracking-wider">APEX</span>
+            <span className="text-emerald-300 font-extrabold text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-950/90 border border-emerald-500/40 tracking-wider">
+              CBS
             </span>
-            <span className="text-[10px] font-mono font-extrabold text-emerald-700">100% OK</span>
           </div>
-          <p className="text-[10px] text-slate-500 leading-tight">
-            Reserve Adequacy: 24.8% CRR/SLR. Full Swiss tier solvency active.
+          <p className="text-[9px] text-emerald-400/90 font-bold tracking-widest uppercase mt-0.5">
+            Apex National Bank • Core Systems
           </p>
+        </div>
+      </div>
+
+      {/* Categorized Navigation List */}
+      <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto custom-scrollbar">
+        {renderNavGroup('Executive Oversight', executiveItems)}
+        {renderNavGroup('Organization Control', orgItems)}
+        {renderNavGroup('Counter & Cash Operations', counterItems)}
+        {renderNavGroup('Credit & Treasury', creditItems)}
+        {renderNavGroup('Governance & Audit', auditItems)}
+      </nav>
+
+      {/* User Status Bar */}
+      <div className="p-3 border-t border-slate-800/80 bg-slate-950/80 backdrop-blur-md">
+        <div className="flex items-center justify-between p-2.5 rounded-xl bg-white/[0.04] border border-white/10 hover:border-white/20 transition-all">
+          <div className="flex items-center gap-2.5 overflow-hidden">
+            <div className="relative shrink-0">
+              <img
+                src={getAvatarByRoleOrUser(user?.roles?.[0] || user?.username, user?.fullName)}
+                alt="Profile"
+                className="w-8 h-8 rounded-full object-cover border border-slate-700 ring-2 ring-emerald-500/40"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).src =
+                    'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=320&auto=format&fit=crop&q=80';
+                }}
+              />
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 border-2 border-slate-950 absolute -bottom-0.5 -right-0.5 animate-pulse" />
+            </div>
+            <div className="truncate">
+              <p className="text-xs font-bold text-white truncate leading-tight">
+                {user?.fullName || user?.username || 'Core Banking User'}
+              </p>
+              <span className="inline-block text-[9px] font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 mt-0.5 uppercase">
+                {primaryRole}
+              </span>
+            </div>
+          </div>
+          <button
+            onClick={logout}
+            title="Sign Out"
+            className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-950/40 rounded-lg transition"
+          >
+            <LogOut className="w-4 h-4" />
+          </button>
         </div>
       </div>
     </aside>
