@@ -19,6 +19,7 @@ import {
   ArrowRight,
   Layers,
   Building,
+  BookOpen,
   X,
   Sparkles
 } from 'lucide-react';
@@ -197,15 +198,15 @@ export const Header: React.FC = () => {
             </div>
           </div>
 
-          {/* Workflow Guide & Interview Walkthrough Button */}
+          {/* CBS Operations & Architecture Walkthrough Manual */}
           <button
             type="button"
             onClick={() => setShowInterviewGuide(true)}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 bg-gradient-to-r from-emerald-800 via-teal-700 to-emerald-900 hover:from-emerald-700 hover:to-teal-800 text-white rounded-xl text-xs font-bold shadow-xs transition-transform active:scale-95 border border-emerald-900"
-            title="Open CBS Workflow Walkthrough & Interview Guide"
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl text-xs font-semibold shadow-xs transition-all border border-slate-700"
+            title="Open Core Banking Solution (CBS) Operations & Architecture Manual"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
-            <span className="hidden sm:inline">Workflow Guide</span>
+            <BookOpen className="w-3.5 h-3.5 text-emerald-400" />
+            <span className="hidden sm:inline">CBS Manual & Guide</span>
           </button>
 
           {/* Notifications Dropdown */}

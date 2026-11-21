@@ -211,32 +211,32 @@ export const Sidebar: React.FC = () => {
   };
 
   return (
-    <aside className="w-64 bg-gradient-to-b from-[#080E1E] via-[#0B152B] to-[#060B18] text-slate-300 flex flex-col shrink-0 border-r border-slate-800/80 shadow-2xl select-none relative z-30">
+    <aside className="w-64 bg-gradient-to-b from-[#071326] via-[#0A1B36] to-[#050E1F] text-slate-300 flex flex-col shrink-0 border-r border-slate-800/80 shadow-2xl select-none relative z-30">
       {/* Brand Header */}
-      <div className="h-16 flex items-center px-5 gap-3 border-b border-slate-800/80 bg-slate-950/60 backdrop-blur-md">
-        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 via-teal-400 to-emerald-400 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-500/25 ring-1 ring-white/20">
+      <div className="h-16 flex items-center px-5 gap-3 border-b border-slate-800/80 bg-slate-950/70 backdrop-blur-md">
+        <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 via-teal-500 to-emerald-400 text-slate-950 flex items-center justify-center font-black shadow-lg shadow-emerald-950/60 ring-1 ring-white/20">
           <Landmark className="w-5 h-5 text-slate-950" />
         </div>
         <div>
           <div className="flex items-center gap-1.5">
-            <span className="font-black text-base text-white tracking-wider">APEX</span>
-            <span className="text-emerald-300 font-extrabold text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-950/90 border border-emerald-500/40 tracking-wider">
+            <span className="font-black text-sm text-white tracking-wider">APEX BANK</span>
+            <span className="text-emerald-300 font-extrabold text-[9px] px-1.5 py-0.5 rounded bg-emerald-950/90 border border-emerald-500/40 tracking-wider">
               CBS
             </span>
           </div>
-          <p className="text-[9px] text-emerald-400/90 font-bold tracking-widest uppercase mt-0.5">
-            Apex National Bank • Core Systems
+          <p className="text-[9px] text-slate-400 font-medium tracking-wide mt-0.5">
+            RBI Regulated • Scheduled Bank
           </p>
         </div>
       </div>
 
       {/* Categorized Navigation List */}
       <nav className="flex-1 px-3 py-3 space-y-1 overflow-y-auto custom-scrollbar">
-        {renderNavGroup('Executive Oversight', executiveItems)}
-        {renderNavGroup('Organization Control', orgItems)}
+        {renderNavGroup('Treasury & Executive', executiveItems)}
+        {renderNavGroup('Branch Network & HR', orgItems)}
         {renderNavGroup('Counter & Cash Operations', counterItems)}
-        {renderNavGroup('Credit & Treasury', creditItems)}
-        {renderNavGroup('Governance & Audit', auditItems)}
+        {renderNavGroup('Credit & Advances', creditItems)}
+        {renderNavGroup('Governance & Risk', auditItems)}
       </nav>
 
       {/* User Status Bar */}
@@ -257,11 +257,16 @@ export const Sidebar: React.FC = () => {
             </div>
             <div className="truncate">
               <p className="text-xs font-bold text-white truncate leading-tight">
-                {user?.fullName || user?.username || 'Core Banking User'}
+                {user?.fullName || user?.username || 'Executive Officer'}
               </p>
-              <span className="inline-block text-[9px] font-extrabold tracking-wider px-1.5 py-0.5 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 mt-0.5 uppercase">
-                {primaryRole}
-              </span>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <span className="inline-block text-[9px] font-extrabold tracking-wider px-1.5 py-0.2 rounded bg-emerald-950/80 text-emerald-300 border border-emerald-600/50 uppercase">
+                  {primaryRole}
+                </span>
+                <span className="text-[9px] text-slate-400 font-mono">
+                  {user?.branchCode || 'HO-001'}
+                </span>
+              </div>
             </div>
           </div>
           <button

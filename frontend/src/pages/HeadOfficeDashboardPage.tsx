@@ -255,21 +255,21 @@ export const HeadOfficeDashboardPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 border-b border-slate-200">
         <div>
           <div className="flex items-center space-x-2.5">
-            <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-300">
-              CENTRAL HEAD OFFICE • CORE CBS COMMAND
+            <span className="px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
+              Apex Central Head Office • HO-001
             </span>
             <span className="text-xs text-slate-400 font-medium">FY 2026-27</span>
-            <span className="inline-flex items-center space-x-1.5 text-xs text-emerald-700 font-semibold">
+            <span className="inline-flex items-center space-x-1.5 text-xs text-emerald-700 font-medium">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>Live RTGS / NEFT Clearance Corridor</span>
+              <span>RTGS / NEFT Clearance Active</span>
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2.5 font-sans">
-            <Building className="h-7 w-7 text-emerald-800" />
-            Executive Core Banking Command & Oversight Portal
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2.5">
+            <Building className="h-7 w-7 text-emerald-800 shrink-0" />
+            <span>Core Banking Command & Treasury Oversight</span>
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Real-time multi-branch consolidation, double-entry general ledger balancing, statutory reserve monitoring, and automated batch settlement orchestrator.
+            Real-time multi-branch balance sheet consolidation, double-entry general ledger, and statutory reserve monitoring.
           </p>
         </div>
 

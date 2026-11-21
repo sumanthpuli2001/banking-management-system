@@ -151,19 +151,19 @@ export const InterviewGuideModal: React.FC<InterviewGuideModalProps> = ({ isOpen
         <div className="p-5 sm:p-6 bg-gradient-to-r from-slate-950 via-[#06231D] to-slate-900 text-white flex items-center justify-between shrink-0">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-2xl bg-emerald-500/20 border border-emerald-400/40 flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-emerald-400" />
+              <BookOpen className="w-5 h-5 text-emerald-400" />
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base sm:text-lg font-black tracking-tight text-white">
-                  Enterprise CBS Interview & Testing Guide
+                  Enterprise CBS Operations & Architecture Guide
                 </h3>
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-400/30">
-                  INTERVIEW READY
+                  CORE BANKING
                 </span>
               </div>
               <p className="text-xs text-emerald-200/80 mt-0.5">
-                Step-by-step clinical walkthrough, what to say to the interviewer, and pre-verified test credentials.
+                Step-by-step core banking operations walkthrough, what to say to the interviewer, and pre-verified test credentials.
               </p>
             </div>
           </div>
