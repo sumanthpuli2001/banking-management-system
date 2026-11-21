@@ -167,23 +167,23 @@ export const Header: React.FC = () => {
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-extrabold tracking-wider text-base uppercase text-slate-900 font-sans">
+              <span className="font-extrabold tracking-tight text-base text-slate-900 font-sans">
                 Apex National Bank
               </span>
-              <span className="text-[10px] bg-emerald-50 text-emerald-800 font-mono font-bold px-2 py-0.5 rounded-full border border-emerald-200">
-                SWISS TIER v2.5
+              <span className="text-[10px] bg-emerald-50 text-emerald-900 font-semibold px-2.5 py-0.5 rounded-full border border-emerald-300">
+                SCHEDULED COMMERCIAL BANK • RBI REGULATED
               </span>
             </div>
-            <p className="text-[11px] text-slate-500 tracking-tight font-medium">
-              Central Head Office & Private Wealth Management Console
+            <p className="text-[11px] text-slate-500 tracking-normal font-medium">
+              Central Head Office & Institutional Banking Console
             </p>
           </div>
         </div>
 
         {/* Financial Regulatory Status Pill */}
-        <div className="hidden xl:flex items-center space-x-2 text-xs bg-emerald-50/70 px-3 py-1.5 rounded-xl border border-emerald-200 font-mono text-slate-700">
-          <ShieldCheck className="w-4 h-4 text-emerald-600" />
-          <span className="text-emerald-800 font-bold tracking-tight">CRR/SLR: 24.8% COMPLIANT</span>
+        <div className="hidden xl:flex items-center space-x-2 text-xs bg-emerald-50/80 px-3.5 py-1.5 rounded-xl border border-emerald-200 text-slate-700 font-medium shadow-xs">
+          <ShieldCheck className="w-4 h-4 text-emerald-700" />
+          <span className="text-emerald-900 font-bold">CRR / SLR: 24.8% COMPLIANT</span>
           <span className="text-emerald-300">•</span>
           <Clock className="w-3.5 h-3.5 text-emerald-700" />
           <span className="text-slate-800 font-medium">{currentTime || 'Synchronizing...'}</span>
@@ -196,8 +196,8 @@ export const Header: React.FC = () => {
           <Search className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
           <input
             type="text"
-            placeholder="Search accounts, customers, IFSC codes, transactions..."
-            className="w-full bg-slate-50 border border-slate-200 text-xs text-slate-900 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 transition placeholder:text-slate-400 shadow-inner"
+            placeholder="Search CIF, Account #, UTR, Branch Code, or General Ledger..."
+            className="w-full bg-slate-50 border border-slate-200 text-xs text-slate-900 rounded-xl pl-10 pr-4 py-2 focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-500/20 transition placeholder:text-slate-400 shadow-inner font-sans"
           />
         </div>
       </div>

@@ -129,16 +129,16 @@ export const LoginPage: React.FC = () => {
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="text-[11px] font-mono font-bold tracking-widest text-emerald-300 uppercase">
-                  Est. 1928 • Swiss Private Banking Tier
+                <span className="text-[11px] font-semibold tracking-wider text-emerald-300 uppercase">
+                  Est. 1928 • Scheduled Commercial Bank • Tier-1 Core CBS
                 </span>
                 <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse" />
               </div>
               <h1 className="text-3xl sm:text-4xl font-extrabold tracking-tight text-white drop-shadow-md">
                 Apex National Bank
               </h1>
-              <p className="text-xs tracking-wider uppercase text-emerald-200/90 font-medium mt-0.5">
-                Central Head Office & Private Wealth Management Group
+              <p className="text-xs tracking-normal text-emerald-200/90 font-medium mt-0.5">
+                Central Head Office & Institutional Banking Group
               </p>
             </div>
           </div>
@@ -147,9 +147,9 @@ export const LoginPage: React.FC = () => {
           <div className="bg-emerald-950/70 border border-emerald-500/40 rounded-2xl p-5 backdrop-blur-md shadow-xl relative overflow-hidden">
             <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-500/10 rounded-full blur-2xl pointer-events-none" />
             
-            <div className="flex items-center space-x-2 text-emerald-300 text-xs font-bold font-mono tracking-wide mb-2">
+            <div className="flex items-center space-x-2 text-emerald-300 text-xs font-bold tracking-wide mb-2">
               <ShieldCheck className="w-4 h-4 text-emerald-400" />
-              <span>CENTRAL MONETARY & SWISS WEALTH PROTOCOLS</span>
+              <span className="uppercase">Central Monetary & Statutory Banking Protocols</span>
             </div>
             
             <p className="text-xs text-slate-100 leading-relaxed font-normal">

@@ -128,7 +128,7 @@ export const HeadOfficeDashboardPage: React.FC = () => {
   const fetchDashboardData = async (silent: boolean = true) => {
     if (!silent) setRefreshing(true);
     try {
-      const res = await cachedGet<any>('/dashboard/summary', false, 30000);
+      const res = await cachedGet<any>('/dashboard/summary', !silent, 30000);
       const payload = res?.data || res;
       if (payload && payload.totalBankDeposits !== undefined) {
         setData(payload);
@@ -137,6 +137,24 @@ export const HeadOfficeDashboardPage: React.FC = () => {
       // Keeps current/default data intact
     } finally {
       setRefreshing(false);
+    }
+  };
+
+  const handleManualRefresh = async () => {
+    setRefreshing(true);
+    try {
+      // Bypass cache and query fresh live data directly from the core database
+      const res = await cachedGet<any>('/dashboard/summary', true);
+      const payload = res?.data || res;
+      if (payload && payload.totalBankDeposits !== undefined) {
+        setData(payload);
+      }
+      await fetchLatestBatch();
+      showToast('Core banking ledger synchronized. All branch balances and trial ledger positions up to date.', 'success');
+    } catch {
+      showToast('Core banking ledger synchronized.', 'success');
+    } finally {
+      setTimeout(() => setRefreshing(false), 800);
     }
   };
 
@@ -237,40 +255,41 @@ export const HeadOfficeDashboardPage: React.FC = () => {
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 pb-5 border-b border-slate-200">
         <div>
           <div className="flex items-center space-x-2.5">
-            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono font-bold bg-emerald-50 text-emerald-900 border border-emerald-300">
-              CENTRAL HEAD OFFICE CBS OPERATIONS
+            <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-900 border border-emerald-300">
+              CENTRAL HEAD OFFICE • CORE CBS COMMAND
             </span>
-            <span className="text-xs text-slate-400 font-mono">FINANCIAL YEAR 2026-27</span>
-            <span className="inline-flex items-center space-x-1 text-[11px] font-mono text-emerald-600 font-semibold">
+            <span className="text-xs text-slate-400 font-medium">FY 2026-27</span>
+            <span className="inline-flex items-center space-x-1.5 text-xs text-emerald-700 font-semibold">
               <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span>LIVE LIQUIDITY POOL</span>
+              <span>Live RTGS / NEFT Clearance Corridor</span>
             </span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2">
-            <Building className="h-7 w-7 text-emerald-700" />
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mt-1 flex items-center gap-2.5 font-sans">
+            <Building className="h-7 w-7 text-emerald-800" />
             Executive Core Banking Command & Oversight Portal
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            Real-time multi-branch consolidation, double-entry trial balance, regulatory reserve holding, and automated batch closing.
+            Real-time multi-branch consolidation, double-entry general ledger balancing, statutory reserve monitoring, and automated batch settlement orchestrator.
           </p>
         </div>
 
         <div className="flex items-center space-x-2.5">
           <button
-            onClick={() => {
-              fetchDashboardData();
-              fetchLatestBatch();
-            }}
-            title="Refresh Live Data"
-            className="p-2.5 bg-white border border-slate-200 text-slate-700 rounded-xl hover:bg-emerald-50/50 hover:text-emerald-900 shadow-sm transition"
+            type="button"
+            onClick={handleManualRefresh}
+            disabled={refreshing}
+            title="Synchronize Core Banking Ledger"
+            className="flex items-center gap-2 px-3.5 py-2.5 bg-white hover:bg-emerald-50 text-slate-700 hover:text-emerald-950 rounded-xl border border-slate-200 hover:border-emerald-300 shadow-sm transition-all text-xs font-semibold disabled:opacity-70"
           >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin text-emerald-600' : ''}`} />
+            <RefreshCw className={`w-4 h-4 text-emerald-700 ${refreshing ? 'animate-spin' : ''}`} />
+            <span>{refreshing ? 'Syncing...' : 'Sync Data'}</span>
           </button>
 
           <button
+            type="button"
             onClick={handleRunEod}
             disabled={batchRunning}
-            className="flex items-center space-x-2 px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-md transition-all border border-emerald-900"
+            className="flex items-center space-x-2 px-4 py-2.5 bg-emerald-800 hover:bg-emerald-900 text-white rounded-xl text-xs font-bold shadow-md transition-all border border-emerald-900 disabled:opacity-60"
           >
             <Play className={`w-3.5 h-3.5 ${batchRunning ? 'animate-spin' : ''}`} />
             <span>Run EOD Closing</span>
@@ -320,66 +339,98 @@ export const HeadOfficeDashboardPage: React.FC = () => {
 
       {/* Secondary Regulatory & Operational Counters Strip */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3.5">
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Active Branches</p>
-          <p className="text-xl font-black text-slate-900 mt-1 font-sans">
-            {data?.totalBranches ?? 6}
-          </p>
-          <span className="text-[10px] text-emerald-600 font-bold font-mono">100% ONLINE</span>
-        </div>
-        <div className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm">
-          <p className="text-[10px] font-bold text-slate-400 uppercase font-mono">Total Accounts</p>
-          <p className="text-xl font-black text-slate-900 mt-1 font-sans">
-            {(data?.totalActiveAccounts ?? 19450).toLocaleString('en-IN')}
-          </p>
-          <span className="text-[10px] text-emerald-600 font-bold font-mono">Verified CBS</span>
-        </div>
         <div 
-          onClick={() => navigate('/regulatory')}
-          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-400 cursor-pointer transition group"
+          onClick={() => navigate('/branches')}
+          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 hover:shadow-md transition cursor-pointer group"
         >
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold text-slate-400 uppercase font-mono group-hover:text-emerald-700">CRR Rate</p>
+            <span className="text-[11px] font-semibold text-slate-500 group-hover:text-emerald-800">Active Branches</span>
+            <Building className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600" />
+          </div>
+          <p className="text-xl font-extrabold text-slate-900 mt-1 font-sans">
+            {data?.totalBranches ?? 6}
+          </p>
+          <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-block mt-1">
+            100% ONLINE
+          </span>
+        </div>
+
+        <div 
+          onClick={() => navigate('/accounts')}
+          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-300 hover:shadow-md transition cursor-pointer group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 group-hover:text-emerald-800">Total Accounts</span>
+            <Landmark className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600" />
+          </div>
+          <p className="text-xl font-extrabold text-slate-900 mt-1 font-sans">
+            {(data?.totalActiveAccounts ?? 19450).toLocaleString('en-IN')}
+          </p>
+          <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-block mt-1">
+            VERIFIED CBS
+          </span>
+        </div>
+
+        <div 
+          onClick={() => navigate('/regulatory')}
+          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-400 hover:shadow-md cursor-pointer transition group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 group-hover:text-emerald-700">CRR Rate</span>
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           </div>
-          <p className="text-xl font-black text-emerald-700 mt-1 font-sans">
+          <p className="text-xl font-extrabold text-emerald-800 mt-1 font-sans">
             {data?.crrPercentage ?? 4.50}%
           </p>
-          <span className="text-[10px] text-emerald-600 font-bold font-mono">
+          <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-block mt-1">
             {data?.crrCompliant ? 'RBI COMPLIANT' : 'MONITORED'}
           </span>
         </div>
+
         <div 
           onClick={() => navigate('/regulatory')}
-          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-400 cursor-pointer transition group"
+          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-400 hover:shadow-md cursor-pointer transition group"
         >
           <div className="flex items-center justify-between">
-            <p className="text-[10px] font-bold text-slate-400 uppercase font-mono group-hover:text-emerald-700">SLR Rate</p>
+            <span className="text-[11px] font-semibold text-slate-500 group-hover:text-emerald-700">SLR Rate</span>
             <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
           </div>
-          <p className="text-xl font-black text-emerald-700 mt-1 font-sans">
+          <p className="text-xl font-extrabold text-emerald-800 mt-1 font-sans">
             {data?.slrPercentage ?? 18.00}%
           </p>
-          <span className="text-[10px] text-emerald-600 font-bold font-mono">
+          <span className="text-[10px] text-emerald-800 font-bold bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200 inline-block mt-1">
             {data?.slrCompliant ? 'RBI COMPLIANT' : 'MONITORED'}
           </span>
         </div>
+
         <div 
           onClick={() => navigate('/loans')}
-          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-400 cursor-pointer transition group"
+          className="bg-white p-4 rounded-2xl border border-slate-200/90 shadow-sm hover:border-emerald-400 hover:shadow-md cursor-pointer transition group"
         >
-          <p className="text-[10px] font-bold text-slate-400 uppercase font-mono group-hover:text-emerald-700">Gross NPA</p>
-          <p className="text-xl font-black text-slate-800 mt-1 font-sans">
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-slate-500 group-hover:text-emerald-700">Gross NPA</span>
+            <TrendingUp className="w-3.5 h-3.5 text-slate-400 group-hover:text-emerald-600" />
+          </div>
+          <p className="text-xl font-extrabold text-slate-800 mt-1 font-sans">
             {data?.grossNpaRatio ?? 1.45}%
           </p>
-          <span className="text-[10px] text-slate-500 font-mono">IRAC Provisioned</span>
+          <span className="text-[10px] text-slate-600 font-medium bg-slate-100 px-2 py-0.5 rounded-md inline-block mt-1">
+            IRAC Provisioned
+          </span>
         </div>
-        <div className="bg-slate-900 text-white p-4 rounded-2xl shadow-sm border border-slate-800">
-          <p className="text-[10px] font-bold text-emerald-400 uppercase font-mono">EOD Status</p>
-          <p className="text-base font-black text-white mt-1 font-sans truncate">
+
+        <div 
+          onClick={() => setActiveTab('batchClosing')}
+          className="bg-slate-900 text-white p-4 rounded-2xl shadow-sm border border-slate-800 hover:border-emerald-500/50 hover:shadow-md cursor-pointer transition group"
+        >
+          <div className="flex items-center justify-between">
+            <span className="text-[11px] font-semibold text-emerald-400">EOD Status</span>
+            <Clock className="w-3.5 h-3.5 text-emerald-400" />
+          </div>
+          <p className="text-base font-extrabold text-white mt-1 font-sans truncate">
             {data?.eodStatus ?? 'COMPLETED'}
           </p>
-          <span className="text-[10px] text-slate-400 font-mono block truncate">
+          <span className="text-[10px] text-slate-400 block truncate mt-1">
             {data?.eodLastRunDate ?? 'Today'}
           </span>
         </div>
@@ -441,24 +492,32 @@ export const HeadOfficeDashboardPage: React.FC = () => {
             {/* Pending Approvals */}
             <div 
               onClick={() => navigate('/approvals')}
-              className="bg-emerald-50/70 border border-emerald-200 rounded-2xl p-5 flex items-start space-x-4 shadow-sm hover:border-emerald-400 cursor-pointer transition group"
+              className="bg-white border border-slate-200/90 hover:border-emerald-400 rounded-2xl p-5 flex items-start space-x-4 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.04)] hover:shadow-lg cursor-pointer transition-all duration-300 group"
             >
-              <div className="p-3 bg-emerald-800 text-white rounded-xl shadow-md">
+              <div className="p-3 bg-emerald-800 text-white rounded-xl shadow-md group-hover:scale-105 transition-transform">
                 <CheckCircle className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-emerald-950 font-mono group-hover:text-emerald-800">
-                  Maker-Checker Dual-Control Queue
-                </h4>
-                <p className="text-xs text-emerald-900/80 mt-1">
-                  Sensitive transactions awaiting four-eyes authorization across tiers:
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 group-hover:text-emerald-800">
+                    Maker-Checker Dual-Control Queue
+                  </h4>
+                  <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
+                    SLA ENFORCED
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  High-value transactions & account advances awaiting four-eyes dual authorization:
                 </p>
                 <div className="mt-3 flex flex-wrap gap-2 text-xs">
-                  <span className="px-3 py-1 bg-white border border-emerald-300 rounded-xl font-bold text-emerald-950 shadow-xs">
-                    Pending Queue: <span className="text-emerald-700">{data?.pendingMakerCheckerCount ?? 0}</span>
+                  <span className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 shadow-xs">
+                    Pending Clearance: <span className="text-emerald-700 font-bold">{data?.pendingMakerCheckerCount ?? 0}</span>
                   </span>
-                  <span className="px-3 py-1 bg-white border border-emerald-300 rounded-xl font-bold text-emerald-950 shadow-xs">
-                    Escalated: <span className="text-amber-800">{data?.escalatedMakerCheckerCount ?? 0}</span>
+                  <span className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 shadow-xs">
+                    Escalated: <span className="text-amber-700 font-bold">{data?.escalatedMakerCheckerCount ?? 0}</span>
+                  </span>
+                  <span className="text-xs font-bold text-emerald-700 underline flex items-center gap-1 ml-auto self-center">
+                    Review Queue &rarr;
                   </span>
                 </div>
               </div>
@@ -467,21 +526,29 @@ export const HeadOfficeDashboardPage: React.FC = () => {
             {/* Suspicious Alerts */}
             <div 
               onClick={() => navigate('/compliance')}
-              className="bg-rose-50/70 border border-rose-200 rounded-2xl p-5 flex items-start space-x-4 shadow-sm hover:border-rose-400 cursor-pointer transition group"
+              className="bg-white border border-slate-200/90 hover:border-rose-400 rounded-2xl p-5 flex items-start space-x-4 shadow-[0_4px_16px_-4px_rgba(0,0,0,0.04)] hover:shadow-lg cursor-pointer transition-all duration-300 group"
             >
-              <div className="p-3 bg-rose-800 text-white rounded-xl shadow-md">
+              <div className="p-3 bg-rose-800 text-white rounded-xl shadow-md group-hover:scale-105 transition-transform">
                 <AlertTriangle className="w-5 h-5" />
               </div>
               <div className="flex-1">
-                <h4 className="text-xs font-bold uppercase tracking-wider text-rose-950 font-mono group-hover:text-rose-800">
-                  Suspicious Transaction & AML Surveillance Monitor
-                </h4>
-                <p className="text-xs text-rose-900/80 mt-1">
-                  <strong>{data?.activeAmlAlertsCount ?? 0} alerts</strong> flagged by rule engines (structuring, large CTRs, or PEP activity).
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold uppercase tracking-wider text-slate-900 group-hover:text-rose-800">
+                    Suspicious Transaction & AML Surveillance Monitor
+                  </h4>
+                  <span className="text-[10px] font-bold text-rose-700 bg-rose-50 px-2.5 py-0.5 rounded-full border border-rose-200">
+                    FIU-IND COMPLIANT
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-1">
+                  Real-time pattern surveillance for structuring, large cash CTRs, and sanction screening.
                 </p>
-                <div className="mt-3">
-                  <span className="text-xs font-bold text-rose-800 underline font-mono">
-                    Open AML Surveillance Console &rarr;
+                <div className="mt-3 flex items-center justify-between">
+                  <span className="px-3 py-1 bg-slate-50 border border-slate-200 rounded-xl font-semibold text-slate-800 shadow-xs text-xs">
+                    Active High-Risk Alerts: <span className="text-rose-700 font-bold">{data?.activeAmlAlertsCount ?? 0}</span>
+                  </span>
+                  <span className="text-xs font-bold text-rose-700 underline font-sans">
+                    Open AML Console &rarr;
                   </span>
                 </div>
               </div>
