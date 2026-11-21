@@ -39,10 +39,24 @@ public class BranchService {
         this.loanRepository = loanRepository;
     }
 
+    private volatile List<BranchDto> cachedBranches;
+    private volatile long lastBranchCacheTime = 0;
+    private static final long BRANCH_CACHE_TTL_MS = 60_000;
+
     @Transactional(readOnly = true)
     public List<BranchDto> getAllBranches(Long regionId) {
+        long now = System.currentTimeMillis();
+        if (regionId == null && cachedBranches != null && (now - lastBranchCacheTime) < BRANCH_CACHE_TTL_MS) {
+            return cachedBranches;
+        }
+
         List<Branch> branches = regionId != null ? branchRepository.findByRegionId(regionId) : branchRepository.findAll();
-        return branches.stream().map(this::mapToDto).collect(Collectors.toList());
+        List<BranchDto> dtos = branches.stream().map(this::mapToDto).collect(Collectors.toList());
+        if (regionId == null) {
+            this.cachedBranches = dtos;
+            this.lastBranchCacheTime = now;
+        }
+        return dtos;
     }
 
     @Transactional(readOnly = true)
@@ -81,6 +95,7 @@ public class BranchService {
                 .build();
 
         Branch saved = branchRepository.save(branch);
+        this.cachedBranches = null;
         return mapToDto(saved);
     }
 
@@ -89,6 +104,7 @@ public class BranchService {
         Branch branch = branchRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Branch", "id", id));
         branch.setStatus(status);
+        this.cachedBranches = null;
         return mapToDto(branchRepository.save(branch));
     }
 

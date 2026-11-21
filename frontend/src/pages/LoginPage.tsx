@@ -27,7 +27,6 @@ export const LoginPage: React.FC = () => {
   // Pre-load default verified credentials for Head Office Admin
   const [username, setUsername] = useState('ho_admin');
   const [password, setPassword] = useState('Password@123');
-  const [selectedRoleKey, setSelectedRoleKey] = useState<'HO_ADMIN' | 'BRANCH_MGR' | 'OFFICER' | 'CLIENT'>('HO_ADMIN');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [backendReady, setBackendReady] = useState<boolean>(false);
@@ -89,14 +88,9 @@ export const LoginPage: React.FC = () => {
     }
   };
 
-  const handleSelectProfile = (
-    key: 'HO_ADMIN' | 'BRANCH_MGR' | 'OFFICER' | 'CLIENT',
-    user: string,
-    pass: string
-  ) => {
-    setSelectedRoleKey(key);
-    setUsername(user);
-    setPassword(pass);
+  const resetDefaultCredentials = () => {
+    setUsername('ho_admin');
+    setPassword('Password@123');
     setError(null);
   };
 
@@ -231,7 +225,7 @@ export const LoginPage: React.FC = () => {
                 <span className="font-semibold">{error}</span>
                 <button
                   type="button"
-                  onClick={() => handleSelectProfile('HO_ADMIN', 'ho_admin', 'Password@123')}
+                  onClick={resetDefaultCredentials}
                   className="block mt-1 text-[11px] text-rose-900 underline font-bold"
                 >
                   Reset to Default Verified Admin Credentials
@@ -296,83 +290,9 @@ export const LoginPage: React.FC = () => {
             </div>
           </form>
 
-          {/* Institutional Persona Selector (Replaces ugly instant demo fill box) */}
-          <div className="mt-6 pt-5 border-t border-slate-100 space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-mono font-bold text-slate-500 uppercase tracking-wider">
-                Select Active Institutional Persona:
-              </span>
-              <span className="text-[10px] text-emerald-800 font-mono font-bold bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                1-Click Switch
-              </span>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-xs">
-              <button
-                type="button"
-                onClick={() => handleSelectProfile('HO_ADMIN', 'ho_admin', 'Password@123')}
-                className={`p-2.5 rounded-xl border text-left transition flex items-center justify-between ${
-                  selectedRoleKey === 'HO_ADMIN'
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold shadow-xs ring-1 ring-emerald-300'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 font-medium'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Building className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                  <span className="truncate">Head Office Admin</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectProfile('BRANCH_MGR', 'bm_bangalore', 'Password@123')}
-                className={`p-2.5 rounded-xl border text-left transition flex items-center justify-between ${
-                  selectedRoleKey === 'BRANCH_MGR'
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold shadow-xs ring-1 ring-emerald-300'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 font-medium'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Landmark className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                  <span className="truncate">Branch Manager</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectProfile('OFFICER', 'emp_bangalore', 'Password@123')}
-                className={`p-2.5 rounded-xl border text-left transition flex items-center justify-between ${
-                  selectedRoleKey === 'OFFICER'
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold shadow-xs ring-1 ring-emerald-300'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 font-medium'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Briefcase className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                  <span className="truncate">Branch Operations</span>
-                </div>
-              </button>
-
-              <button
-                type="button"
-                onClick={() => handleSelectProfile('CLIENT', 'cust_rahul', 'Password@123')}
-                className={`p-2.5 rounded-xl border text-left transition flex items-center justify-between ${
-                  selectedRoleKey === 'CLIENT'
-                    ? 'bg-emerald-50 border-emerald-300 text-emerald-950 font-bold shadow-xs ring-1 ring-emerald-300'
-                    : 'bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100 font-medium'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  <Users className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
-                  <span className="truncate">Retail Wealth Client</span>
-                </div>
-              </button>
-            </div>
-          </div>
-
-          <div className="mt-5 pt-3 border-t border-slate-100 flex items-center justify-center space-x-2 text-[10px] text-slate-400">
+          <div className="mt-6 pt-4 border-t border-slate-100 flex items-center justify-center space-x-2 text-[11px] text-slate-500">
             <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-            <span>Apex HSM Hardware Security Module Protected • Audit Logged</span>
+            <span>Apex HSM Hardware Security Module Protected • Double-Entry Audit Logged</span>
           </div>
         </div>
 

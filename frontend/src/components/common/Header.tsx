@@ -60,7 +60,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'Batch Settlement Status',
     description: 'Inter-branch RTGS clearing cycle #14 completed with 0.00 ledger variance.',
     timestamp: '35 min ago',
-    link: '/head-office',
+    link: '/dashboard',
     isRead: false,
   },
   {
@@ -70,7 +70,7 @@ const INITIAL_NOTIFICATIONS: NotificationItem[] = [
     title: 'Vault Cash Threshold Notice',
     description: 'HO-001 vault holding exceeds ₹50,00,000 ceiling. Auto-transit sweep available.',
     timestamp: '1 hr ago',
-    link: '/cash-management',
+    link: '/branch-cash',
     isRead: true,
   },
   {
@@ -218,6 +218,7 @@ export const Header: React.FC = () => {
         {/* Interactive Notifications Center */}
         <div className="relative" ref={notifRef}>
           <button
+            type="button"
             onClick={() => {
               setNotificationOpen(!notificationOpen);
               setProfileOpen(false);
@@ -350,7 +351,7 @@ export const Header: React.FC = () => {
                 <button
                   onClick={() => {
                     setNotificationOpen(false);
-                    navigate('/head-office');
+                    navigate('/dashboard');
                   }}
                   className="text-xs font-semibold text-emerald-800 hover:text-emerald-950 flex items-center justify-center gap-1 mx-auto"
                 >

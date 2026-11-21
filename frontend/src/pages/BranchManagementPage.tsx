@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import api from '../api/axios';
+import api, { cachedGet } from '../api/axios';
+import { cacheService } from '../api/cache';
 import { ApiResponse } from '../types/auth';
 import { Pagination } from '../components/common/Pagination';
 import {
@@ -39,8 +40,9 @@ interface BranchItem {
 }
 
 export const BranchManagementPage: React.FC = () => {
-  const [branches, setBranches] = useState<BranchItem[]>([]);
-  const [loading, setLoading] = useState<boolean>(true);
+  const cachedBranches = cacheService.get<BranchItem[]>('/branches');
+  const [branches, setBranches] = useState<BranchItem[]>(cachedBranches || []);
+  const [loading, setLoading] = useState<boolean>(!cachedBranches);
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [selectedRegion, setSelectedRegion] = useState<string>('ALL');
   const [currentPage, setCurrentPage] = useState<number>(1);
@@ -63,12 +65,13 @@ export const BranchManagementPage: React.FC = () => {
     initialVaultBalance: 10000000,
   });
 
-  const fetchBranches = async () => {
-    setLoading(true);
+  const fetchBranches = async (silent: boolean = false) => {
+    if (!silent) setLoading(true);
     try {
-      const res = await api.get<ApiResponse<BranchItem[]>>('/branches');
-      if (res.data.success && res.data.data) {
-        setBranches(res.data.data);
+      const res = await cachedGet<any>('/branches', false, 60000);
+      const payload = res?.data || res;
+      if (Array.isArray(payload)) {
+        setBranches(payload);
       }
     } catch (err) {
       console.error('Failed to fetch branches', err);
@@ -78,7 +81,7 @@ export const BranchManagementPage: React.FC = () => {
   };
 
   useEffect(() => {
-    fetchBranches();
+    fetchBranches(!!cachedBranches);
   }, []);
 
   const handleCreateBranch = async (e: React.FormEvent) => {
@@ -201,7 +204,7 @@ export const BranchManagementPage: React.FC = () => {
           </div>
 
           <button
-            onClick={fetchBranches}
+            onClick={() => fetchBranches(false)}
             className="p-2 border border-slatebank-200 rounded-lg hover:bg-slatebank-50"
             title="Refresh Directory"
           >

@@ -23,9 +23,12 @@ api.interceptors.request.use(
 
 api.interceptors.response.use(
   (response: AxiosResponse) => {
-    // Cache successful GET responses in client-side memory
+    // Consistently cache unwrapped payload for instant sub-second page rendering
     if (response.config.method?.toLowerCase() === 'get' && response.data?.success) {
-      cacheService.set(response.config.url || '', response.data);
+      const payload = (response.data && typeof response.data === 'object' && 'data' in response.data && response.data.data !== undefined)
+        ? response.data.data
+        : response.data;
+      cacheService.set(response.config.url || '', payload);
     }
     // Automatically invalidate cache on state mutations (POST, PUT, DELETE, PATCH)
     if (['post', 'put', 'delete', 'patch'].includes(response.config.method?.toLowerCase() || '')) {

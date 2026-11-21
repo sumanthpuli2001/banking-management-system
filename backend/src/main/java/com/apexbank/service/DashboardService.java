@@ -40,6 +40,11 @@ public class DashboardService {
     private final EodBatchRunRepository eodBatchRunRepository;
     private final RegulatoryLiquidityService regulatoryLiquidityService;
 
+    // Sub-second in-memory cache for high-frequency dashboard queries
+    private volatile HeadOfficeDashboardDto cachedSummary;
+    private volatile long lastDashboardCacheTime = 0;
+    private static final long DASHBOARD_CACHE_TTL_MS = 30_000; // 30 seconds TTL
+
     public DashboardService(BranchRepository branchRepository,
                             RegionRepository regionRepository,
                             UserRepository userRepository,
@@ -70,6 +75,12 @@ public class DashboardService {
 
     @Transactional(readOnly = true)
     public HeadOfficeDashboardDto getHeadOfficeSummary() {
+        long now = System.currentTimeMillis();
+        if (cachedSummary != null && (now - lastDashboardCacheTime) < DASHBOARD_CACHE_TTL_MS) {
+            log.debug("Returning cached HeadOfficeDashboardDto (< 1ms)");
+            return cachedSummary;
+        }
+
         long branchCount = branchRepository.count();
         long regionCount = regionRepository.count();
         long userCount = userRepository.count();
@@ -220,7 +231,7 @@ public class DashboardService {
                     .build());
         }
 
-        return HeadOfficeDashboardDto.builder()
+        HeadOfficeDashboardDto summary = HeadOfficeDashboardDto.builder()
                 .totalBankDeposits(totalDeposits)
                 .totalBankAdvances(totalAdvances)
                 .todayDeposits(todayDeposits)
@@ -254,5 +265,9 @@ public class DashboardService {
                 .transactionVolumeAnalytics(timeSlotVolumes)
                 .recentBankingActivities(recentActivities)
                 .build();
+
+        this.cachedSummary = summary;
+        this.lastDashboardCacheTime = now;
+        return summary;
     }
 }

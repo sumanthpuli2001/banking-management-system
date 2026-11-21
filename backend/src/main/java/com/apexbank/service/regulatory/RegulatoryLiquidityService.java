@@ -8,6 +8,7 @@ import com.apexbank.exception.ResourceNotFoundException;
 import com.apexbank.repository.*;
 import com.apexbank.repository.regulatory.*;
 import com.apexbank.service.AuditService;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
@@ -23,6 +24,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 public class RegulatoryLiquidityService {
 
@@ -62,12 +64,23 @@ public class RegulatoryLiquidityService {
         this.auditService = auditService;
     }
 
+    // In-memory cache for sub-second (< 1s) response on regulatory dashboard
+    private volatile RegulatoryDashboardDto cachedRegulatoryDashboard;
+    private volatile long lastRegulatoryCacheTime = 0;
+    private static final long REGULATORY_CACHE_TTL_MS = 30_000;
+
     /**
      * Aggregates dynamic Head Office Regulatory and Liquidity Dashboard data.
      * Complies with RBI Section 42 of RBI Act 1934 (CRR) and Section 24 of BR Act 1949 (SLR).
      */
     @Transactional(readOnly = true)
     public RegulatoryDashboardDto getRegulatoryDashboard() {
+        long now = System.currentTimeMillis();
+        if (cachedRegulatoryDashboard != null && (now - lastRegulatoryCacheTime) < REGULATORY_CACHE_TTL_MS) {
+            log.debug("Returning cached RegulatoryDashboardDto (< 1ms)");
+            return cachedRegulatoryDashboard;
+        }
+
         LocalDate today = LocalDate.now();
 
         // 1. Compute dynamic NDTL breakdown
@@ -104,7 +117,7 @@ public class RegulatoryLiquidityService {
         List<ReserveCalculationHistory> recentCalculations = calculationHistoryRepository
                 .findAllByOrderByCalculationDateDesc(Pageable.ofSize(10)).getContent();
 
-        return RegulatoryDashboardDto.builder()
+        RegulatoryDashboardDto dto = RegulatoryDashboardDto.builder()
                 .asOfDate(today)
                 .activeReportingPeriod(ndtl.getReportingFortnight())
                 .calculationClassification(classification)
@@ -122,6 +135,10 @@ public class RegulatoryLiquidityService {
                 .reportingPeriods(periods)
                 .recentCalculations(recentCalculations)
                 .build();
+
+        this.cachedRegulatoryDashboard = dto;
+        this.lastRegulatoryCacheTime = now;
+        return dto;
     }
 
     /**
@@ -417,6 +434,7 @@ public class RegulatoryLiquidityService {
         record.setVerifiedAt(LocalDateTime.now());
 
         ReserveCalculationHistory saved = calculationHistoryRepository.save(record);
+        this.cachedRegulatoryDashboard = null;
 
         auditService.recordAudit(verifier, "REGULATORY_REPORT_VERIFIED", "LIQUIDITY", String.valueOf(saved.getId()),
                 "Audited and verified statutory Form-A reserve compliance for " + saved.getReportingFortnight(), "127.0.0.1", "SUCCESS");
@@ -443,6 +461,7 @@ public class RegulatoryLiquidityService {
         config.setUpdatedAt(LocalDateTime.now());
 
         RegulatoryConfig saved = configRepository.save(config);
+        this.cachedRegulatoryDashboard = null;
 
         auditService.recordAudit(user, "REGULATORY_CONFIG_UPDATED", "CONFIG", config.getParameterKey(),
                 "Updated " + config.getParameterKey() + " to " + config.getParameterValue() + "% effective " + config.getEffectiveDate(),
@@ -459,6 +478,7 @@ public class RegulatoryLiquidityService {
         alert.setIsAcknowledged(true);
         alert.setAcknowledgedBy(user != null ? user.getUsername() : "OFFICER");
         alert.setAcknowledgedAt(LocalDateTime.now());
+        this.cachedRegulatoryDashboard = null;
 
         return alertRepository.save(alert);
     }
