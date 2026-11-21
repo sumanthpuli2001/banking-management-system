@@ -48,7 +48,7 @@ public class AuthService {
         this.auditService = auditService;
     }
 
-    @Transactional
+    @Transactional(noRollbackFor = {BadCredentialsException.class, BankingException.class})
     public LoginResponse login(LoginRequest request, HttpServletRequest httpRequest) {
         String clientIp = httpRequest != null ? httpRequest.getRemoteAddr() : "127.0.0.1";
         String userAgent = httpRequest != null ? httpRequest.getHeader("User-Agent") : "Unknown";

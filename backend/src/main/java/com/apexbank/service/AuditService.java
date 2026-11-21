@@ -47,7 +47,7 @@ public class AuditService {
         return auditLogRepository.save(log);
     }
 
-    @Transactional
+    @Transactional(propagation = org.springframework.transaction.annotation.Propagation.REQUIRES_NEW)
     public void recordLogin(String username, Long userId, String status, String ip, String userAgent, String failureReason) {
         LoginHistory history = LoginHistory.builder()
                 .username(username)
